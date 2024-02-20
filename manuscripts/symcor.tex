@@ -1,0 +1,425 @@
+\documentclass[11pt]{article}
+\usepackage{amsmath, amsthm, amssymb, pdfpages} 
+\usepackage{fullpage}
+\usepackage{hyperref}
+\usepackage{graphicx}
+\usepackage[capitalize]{cleveref}
+\usepackage{appendix}
+
+% next three for UTF8 to work (for non-ASCII names to work without awkward codes)
+\usepackage[T1]{fontenc}
+\usepackage{textcomp}
+\usepackage[utf8]{inputenc}
+
+% import biblatex with prefered settings
+\input{headerBiblatexHarvard.tex}
+\bibliography{ldsc-lmm} % biblatex wants this in the preamble...
+
+\usepackage[noT]{kinshipsymbols}
+
+% some more definitions
+\DeclareMathOperator{\tr}{Tr}
+\newcommand{\kinMat}{%
+  \ensuremath{%
+    \mathbf{\Phi}
+  }%
+  \xspace%
+}%
+
+% double line spacing (PLoS wants this)
+\usepackage{setspace}
+\doublespacing
+
+% path for figures
+\graphicspath{ {../data/} }
+
+% cool automatic supplemental figures/tables!
+% http://bytesizebio.net/2013/03/11/adding-supplementary-tables-and-figures-in-latex/
+% with some additions
+\newcommand{\beginsupplement}{%
+  \setcounter{table}{0}
+  \renewcommand{\thetable}{S\arabic{table}}%
+  \setcounter{figure}{0}
+  \renewcommand{\thefigure}{S\arabic{figure}}%
+  \setcounter{section}{0}
+  \renewcommand{\thesection}{S\arabic{section}}%
+  \setcounter{equation}{0}
+  \renewcommand{\theequation}{S\arabic{equation}}%
+  \setcounter{page}{1}
+  \renewcommand{\thepage}{S\arabic{page}}%
+}
+
+
+\title{\Large \textbf{Estimating the correlation coefficient when variables in each pair are ordered arbitrarily}}
+\author{Alejandro Ochoa$^{1,2,*}$}
+\date{}
+
+\begin{document}
+
+\maketitle
+
+\noindent
+$^1$ Department of Biostatistics and Bioinformatics, Duke University, Durham, NC 27705, USA \\
+$^2$ Duke Center for Statistical Genetics and Genomics, Duke University, Durham, NC 27705, USA \\
+$^*$ Corresponding author: \texttt{alejandro.ochoa@duke.edu}
+
+
+% \begin{abstract}
+%   ...
+% \end{abstract}
+
+\section{Introduction}
+
+The traditional correlation estimator assumes an asymmetry between the two variables $X$ and $Y$ whose correlation is of interest, namely that their means and variances may be different.
+Massey and Goldberg recently identified an application where these assumptions are troublesome, namely when the pair of variables are admixture proportions of two unlabeled parents.
+While the desired correlation should not depend on the order of the parent values, which is arbitrary, Pearson correlation estimates can yield very different conclusions when there is a bias in this order, for example when the largest value is always presented first.
+Here we develop a new correlation estimator that is derived under the assumptions of this data, namely that the order of the elements of the pair is arbitrary, and results in an estimator that is invariant to permutations between the two values in each pair.
+This estimator is recommended for estimating correlations between parental ancestries, which can be seen as evidence of assortative mating.
+
+\section{Methods}
+
+\subsection{Model}
+
+Let the data consist of pairs of random variables $(Q_1, Q_2)$.
+However, unlike the traditional correlation estimation model, here we require that the distribution of $(Q_2, Q_1)$ be identical to that of $(Q_1, Q_2)$, since the order of the elements in the pair is arbitrary.
+Thus, the marginal distributions of $Q_1$ and $Q_2$ must be identical.
+Therefore, this data satisfies
+\begin{align*}
+  \E[ Q_1 ] = \E[ Q_2 ] &= \mu, \\
+  \Var( Q_1 ) = \Var( Q_2 ) &= \sigma^2, \\
+  \Cov( Q_1, Q_2 ) &= \sigma_{12} = \rho \sigma^2.
+\end{align*}
+Lastly, we shall assume that different pairs are drawn independently from this distribution.
+
+\subsection{Estimator}
+
+We begin by defining base estimators for the variance and covariance, which are consistent but biased for small samples, then use them to arrive at unbiased estimators (for small samples).
+
+Let the observed data for $n$ pairs be $\left\{ (q_{1i}, q_{2i}) \right\}_{i=1}^n$.
+The mean and base variance estimators are straightforward versions of the sample mean and variance, but applied to the pooled data that combines both values of each pair (so their sample sizes are $2n$), whereas the base covariance estimator is the usual estimator except employing the pooled mean estimate and with a different correction factor ($\frac{2}{2n - 1}$ instead of the usual $\frac{1}{n - 1}$ for $n$ pairs):
+\begin{align*}
+  \hat{\mu}
+  &=
+    \frac{1}{2n} \sum_{i=1}^n q_{1i} + q_{2i}
+    , \\
+  \hat{\sigma}^2
+  &=
+    \frac{1}{2n - 1} \sum_{i=1}^n ( q_{1i} - \hat{\mu} )^2 + ( q_{2i} - \hat{\mu} )^2
+    , \\
+  \hat{\sigma}_{12}
+  &=
+    \frac{2}{2n - 1} \sum_{i=1}^n ( q_{1i} - \hat{\mu} )( q_{2i} - \hat{\mu} )
+    .
+\end{align*}
+It is straightforward showing that $\E[ \hat{\mu} ] = \mu$.
+These base variance and covariance estimators are not unbiased, but they are consistent (unbiased as the sample size goes to infinity; see \cref{sec:expectations} for calculations):
+\begin{align*}
+  \E \left[ \hat{\sigma}^2 \right]
+  &=
+    \sigma^2 - \frac{1}{2n - 1} \sigma_{12}
+    , \\
+  \E \left[ \hat{\sigma}_{12} \right]
+  &=
+    \sigma_{12} - \frac{1}{2n-1} \sigma^2
+.
+\end{align*}
+Therefore, we can solve the above system of linear equations to arrive at unbiased estimates (see \cref{sec:system} for derivation):
+\begin{align*}
+  \hat{\sigma}^2_U
+  &=
+    a_n \hat{\sigma}^2 + b_n \hat{\sigma}_{12}
+    ,
+  &\E \left[ \hat{\sigma}^2_U \right]
+  &= \sigma^2
+    , \\
+  \hat{\sigma}_{12,U}
+  &=
+    a_n \hat{\sigma}_{12} + b_n \hat{\sigma}^2
+    ,
+  &\E \left[ \hat{\sigma}_{12,U} \right]
+  &= \sigma_{12}
+    , \\
+  a_n
+  &=
+    \frac{(2n-1)^2}{2n(2n-2)}
+    ,
+  &b_n
+  &=
+    \frac{1}{2n-1} a_n
+    .
+\end{align*}
+Note that for large samples $a_n \approx 1$ whereas $b_n$ vanishes.
+
+Lastly, the correlation is estimated by the ratio of the unbiased covariance and the unbiased variance, which is a consistent estimator of the true correlation:
+\begin{align*}
+  \hat{\rho}
+  &=
+    \frac{ \hat{\sigma}_{12,U} }{ \hat{\sigma}^2_U }
+    \toas[n]
+    \frac{ \E[ \hat{\sigma}_{12,U} ] }{ \E [ \hat{\sigma}^2_U ] }
+    =
+    \frac{ \sigma_{12} }{ \sigma^2 }
+    =
+    \rho
+    .    
+\end{align*}
+
+Note that every base estimate ($\hat{\mu}, \hat{\sigma}^2, \hat{\sigma}_{12}$) and unbiased estimate ($\hat{\sigma}^2_U, \hat{\sigma}_{12,U},\hat{\rho}$) is invariant to swapping $q_{1i}$ and $q_{2i}$ for the same $i$, for any subset of such pairs $i$, as desired.
+
+\section{Appendices}
+
+\subsection{Expectation calculations}
+
+\label{sec:expectations}
+
+First we will need that
+\begin{align*}
+  \E[ q_{1i} \hat{\mu} ]
+  &=
+    \E\left[ q_{1i} \left( \frac{1}{2n} \sum_{j=1}^n ( q_{1j} + q_{2j} ) \right) \right]
+  \\
+  &=
+    \frac{1}{2n} \sum_{j=1}^n \E\left[ q_{1i} ( q_{1j} + q_{2j} ) \right]
+  \\
+  &=
+    \frac{1}{2n} \sum_{j=1}^n \E[ q_{1i} q_{1j} ] + \E[ q_{1i} q_{2j} ]
+  \\
+  &=
+    \frac{1}{2n} \sum_{j=1}^n \Cov( q_{1i}, q_{1j} ) + \Cov( q_{1i}, q_{2j} ) + \E[ q_{1i}] \E[q_{1j} ] + \E[ q_{1i}] \E[q_{2j} ]
+  \\
+  &=
+    \frac{1}{2n} \left( \Var( q_{1i}) + \Cov( q_{1i}, q_{2i} ) + 2 n \mu^2 \right)
+  \\
+  &=
+    \mu^2 + \frac{1}{2n} \left( \sigma^2 + \sigma_{12} \right)
+\end{align*}
+where we assumed that the covariance of different pairs ($j \ne i$) is zero.
+Therefore, $\E[ \hat{\mu}^2 ]$ has the same value:
+\begin{align*}
+  \E[ \hat{\mu}^2 ]
+  &=
+    \E\left[ \left( \frac{1}{2n} \sum_{i=1}^n ( q_{1i} + q_{2i} ) \right) \hat{\mu} \right]
+  \\
+  &=
+    \frac{1}{2n} \sum_{i=1}^n \E\left[ ( q_{1i} + q_{2i} ) \hat{\mu} \right]
+  \\
+  &=
+    \mu^2 + \frac{1}{2n} \left( \sigma^2 + \sigma_{12} \right)
+  .
+\end{align*}
+Next, we obtain that
+\begin{align*}
+  \Var( \hat{\mu} )
+  &=
+    \E[ (\hat{\mu} - \mu)^2 ]
+  \\
+  &=
+    \E[ \hat{\mu}^2 + \mu^2 - 2 \hat{\mu}\mu ]
+  \\
+  &=
+    \E[ \hat{\mu}^2 ] + \mu^2 - 2 \E[ \hat{\mu} ] \mu
+  \\
+  &=
+    \left(
+    \mu^2
+    +
+    \frac{1}{2n} \left(
+    \sigma^2
+    + \sigma_{12}
+    \right)
+    \right)
+    + \mu^2 - 2 \mu^2
+  \\
+  &=
+    \frac{1}{2n} \left(
+    \sigma^2
+    + \sigma_{12}
+    \right)
+    .
+\end{align*}
+It follows that
+\begin{align*}
+  \E \left[ ( q_{1i} - \hat{\mu} )^2 \right]
+  &=
+    \E \left[ q_{1i}^2 \right] + \E \left[ \hat{\mu}^2 \right] - 2 \E \left[ q_{1i} \hat{\mu} \right]
+  \\
+  &=
+    \Var( q_{1i} ) + \E[ q_{1i} ]^2
+    + \E \left[ \hat{\mu} ^2 \right]
+    - 2 \E \left[ q_{1i} \hat{\mu} \right]
+  \\
+  &=
+    \sigma^2 + \mu^2
+    + \left( \mu^2 + \frac{1}{2n} \left( \sigma^2 + \sigma_{12} \right) \right)
+    - 2 \left( \mu^2 + \frac{1}{2n} \left( \sigma^2 + \sigma_{12} \right) \right)
+  \\
+  &=
+    \sigma^2
+    - \frac{1}{2n} \left( \sigma^2 + \sigma_{12} \right)
+  \\
+  &=
+    \frac{2n-1}{2n} \sigma^2
+    - \frac{1}{2n} \sigma_{12}
+    .
+\end{align*}
+Lastly, we obtain the expectation of the sample variance,
+\begin{align*}
+  \E \left[ \hat{\sigma}^2 \right]
+  &=
+    \frac{1}{2n - 1} \sum_{i=1}^n \E \left[ ( q_{1i} - \hat{\mu} )^2 \right] + \E \left[ ( q_{2i} - \hat{\mu} )^2 \right] 
+  \\
+  &=
+    \frac{1}{2n - 1} 2n \left( \frac{2n-1}{2n} \sigma^2 - \frac{1}{2n} \sigma_{12} \right)
+  \\
+  &=
+    \sigma^2 - \frac{1}{2n - 1} \sigma_{12}
+    .
+\end{align*}
+
+For the sample covariance, we have
+\begin{align*}
+  \E \left[ \hat{\sigma}_{12} \right]
+  &=
+    \frac{2}{2n - 1}\sum_{i=1}^n \E \left[ ( q_{1i} - \hat{\mu} )( q_{2i} - \hat{\mu} ) \right]
+  \\
+  &=
+    \frac{2}{2n - 1} \sum_{i=1}^n
+    \E \left[ q_{1i} q_{2i} \right]
+    - \E \left[ q_{1i} \hat{\mu} \right]
+    - \E \left[ \hat{\mu} q_{2i} \right]
+    + \E \left[ \hat{\mu}^2 \right]
+  \\
+  &=
+    \frac{2}{2n - 1} \sum_{i=1}^n
+    \Cov ( q_{1i}, q_{2i} )
+    + \E [ q_{1i} ] \E[ q_{2i} ]
+    - \E \left[ q_{1i} \hat{\mu} \right]
+    - \E \left[ \hat{\mu} q_{2i} \right]
+    + \E \left[ \hat{\mu}^2 \right]
+  \\
+  &=
+    \frac{2n}{2n - 1} \left(
+    \sigma_{12}
+    + \mu^2
+    - \left( \mu^2 + \frac{1}{2n} \left( \sigma^2 + \sigma_{12} \right) \right)
+    \right)
+  \\
+  &=
+    \frac{2n}{2n - 1} \left(
+    \sigma_{12}
+    - \frac{1}{2n} \left( \sigma^2 + \sigma_{12} \right)
+    \right)
+  \\
+  &=
+    \frac{2n}{2n - 1} \left(
+    \frac{2n-1}{2n} \sigma_{12}
+    - \frac{1}{2n} \sigma^2
+    \right)
+  \\
+  &=
+    \sigma_{12}
+    - \frac{1}{2n-1} \sigma^2
+    .
+\end{align*}
+
+\subsection{Solving system of equations to unbias base estimators}
+
+\label{sec:system}
+
+The system of equations we desire to solve is given using matrix algebra by
+\begin{align*}
+  \E \left[
+  \begin{pmatrix}
+    \hat{\sigma}^2 \\
+    \hat{\sigma}_{12}
+  \end{pmatrix}
+  \right]
+  &=
+    \mathbf{A}
+    \begin{pmatrix}
+      \sigma^2 \\
+      \sigma_{12}
+    \end{pmatrix}
+    ,
+  &
+    \mathbf{A}
+  &=
+    \begin{pmatrix}
+      1 & - \frac{1}{2n - 1} \\
+      - \frac{1}{2n-1} & 1 \\
+    \end{pmatrix}
+    .
+\end{align*}
+The inverse of the above matrix is
+\begin{align*}
+  \mathbf{A}^{-1}
+  &=
+    a_n
+    \begin{pmatrix}
+      1 & \frac{1}{2n - 1} \\
+      \frac{1}{2n-1} & 1 \\
+    \end{pmatrix}
+    ,
+\end{align*}
+where $a_n$ is the inverse of the determinant and matches what is given in the main text:
+\begin{align*}
+  a_n
+  &=
+    \frac{1}{1 - \frac{1}{(2n - 1)^2}}
+  \\
+  &=
+    \frac{(2n - 1)^2}{(2n - 1)^2 - 1}
+  \\
+  &=
+    \frac{(2n - 1)^2}{2n(2n - 2)}
+    .
+\end{align*}
+The unbiased estimators are given by
+\begin{align*}
+  \begin{pmatrix}
+    \hat{\sigma}^2_U \\
+    \hat{\sigma}_{12,U}
+  \end{pmatrix}
+  &=
+    \mathbf{A}^{-1}
+    \begin{pmatrix}
+      \hat{\sigma}^2 \\
+      \hat{\sigma}_{12}
+    \end{pmatrix}
+    .
+\end{align*}
+It follows that these estimators are actually unbiased:
+\begin{align*}
+  \E \left[
+  \begin{pmatrix}
+    \hat{\sigma}^2_U \\
+    \hat{\sigma}_{12,U}
+  \end{pmatrix}
+  \right]
+  &=
+    \mathbf{A}^{-1}
+    \E \left[
+    \begin{pmatrix}
+      \hat{\sigma}^2 \\
+      \hat{\sigma}_{12}
+    \end{pmatrix}
+    \right]
+  \\
+  &=
+    \mathbf{A}^{-1}
+    \mathbf{A}
+    \begin{pmatrix}
+      \sigma^2 \\
+      \sigma_{12}
+    \end{pmatrix}
+  \\
+  &=
+    \begin{pmatrix}
+      \sigma^2 \\
+      \sigma_{12}
+    \end{pmatrix}
+    .
+\end{align*}
+
+
+\end{document}
