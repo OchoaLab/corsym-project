@@ -72,9 +72,11 @@ $^*$ Corresponding author: \texttt{alejandro.ochoa@duke.edu}
 
 The traditional correlation estimator assumes an asymmetry between the two variables $X$ and $Y$ whose correlation is of interest, namely that their means and variances may be different.
 Massey and Goldberg recently identified an application where these assumptions are troublesome, namely when the pair of variables are admixture proportions of two unlabeled parents.
-While the desired correlation should not depend on the order of the parent values, which is arbitrary, Pearson correlation estimates can yield very different conclusions when there is a bias in this order, for example when the largest value is always presented first.
-Here we develop a new correlation estimator that is derived under the assumptions of this data, namely that the order of the elements of the pair is arbitrary, and results in an estimator that is invariant to permutations between the two values in each pair.
-This estimator is recommended for estimating correlations between parental ancestries, which can be seen as evidence of assortative mating.
+The desired correlation for this data should not depend on the order of the parent values, which is arbitrary.
+However, Pearson correlation estimates can yield very different values when the variable order is biased, for example, when the largest value is always presented first, which inflates correlations.
+Here we develop a new correlation estimator that is derived under the assumptions of this data, namely that the order of the elements of the pair is arbitrary, and results in an estimator that is invariant to swapping the two values in each pair.
+The key assumption implies that the two variables have identical marginal distributions, hence there is more symmetry in this correlation model, which we term ``corsym''.
+This estimator is recommended for estimating correlations between parental ancestry proportions, which can be seen as evidence of assortative mating.
 
 \section{Methods}
 
