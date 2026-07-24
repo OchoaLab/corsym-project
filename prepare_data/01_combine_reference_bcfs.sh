@@ -1,7 +1,4 @@
 #! /bin/bash
-#SBATCH --mem=75G
-#SBATCH -p goldberg,scavenger,common
-#SBATCH --output /hpc/group/ochoalab/gk139/corsym/hgdp/combine.out
 
 ####Ran with Slurm using 5G memory and 1 CPU. This script is used to merge reference bcf files and convert them to PLINK format. 
 ####Extract and  update sample IDs from different HGDP native American populations to a single population label "HGDP" for analysis. 
