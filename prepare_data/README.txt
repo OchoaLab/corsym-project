@@ -5,5 +5,6 @@ This directory is loosely set up expecting that all scripts are run in each dire
   4. ancestor
   5. admixture
 
+Resources used were downloaded from:
 https://faculty.washington.edu/browning/beagle/beagle.html
 https://bochet.gcc.biostat.washington.edu/beagle/genetic_maps/
