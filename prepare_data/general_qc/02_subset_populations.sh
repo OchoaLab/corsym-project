@@ -22,7 +22,7 @@ awk '$REF_POPS {print $1 "_" $2 "\t" $1}' \
     ${IN_FILE_REF}.psam > ${IN_DIR}/rfmix_three_way_ref.txt
 awk '$REF_POPS {
     c1 = ($1 == "HGDP" || $1 == "ibs") ? "NonYRI" : $1
-    print c1 "_" $2 "\t" c1
+    print $1 "_" $2 "\t" c1
 }' ${IN_FILE_REF}.psam > ${IN_DIR}/rfmix_two_way_ref.txt
 
 ###Filter out non-target populations from the trio plink2 file
