@@ -11,7 +11,7 @@ OUT_FILE=tgp_hgdp_reference
 ####Load modules bcftools, plink, and plink2
 module load bcftools
 module load Plink/1.90
-export PATH="~/miniconda3/envs/plink_test/bin:$PATH"
+source activate plink2
 
 ###Concatenate the reference bcf files and convert to VCF format
 bcftools concat -Ob -o $OUT_DIR/$OUT_FILE.bcf $IN_DIR/*chr*.bcf
