@@ -9,7 +9,7 @@ export PATH="~/miniconda3/envs/plink_test/bin:$PATH"
 ###Set the input and output directories
 IN_DIR=/path/to/data/
 IN_FILE=${IN_DIR}/MERGED_REF_TRIOS_std_dups_removed
-OUT_DIR=$IN_DIR/../BEAGLE/
+OUT_DIR=$IN_DIR/BEAGLE/
 mkdir -p $OUT_DIR
 
 ####Split the merged reference and target data into separate VCF files for each chromosome. The output files are compressed and indexed using tabix for downstream analysis.
