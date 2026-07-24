@@ -15,21 +15,21 @@ i=$SLURM_ARRAY_TASK_ID
 
 ###Run Beagle of the reference and target VCF files for the specified chromosome. The output files are compressed and indexed using tabix for downstream analysis.
 CMD1=$(echo java -Xss5m -Xmx5g -jar ${SCRIPTS}beagle.27Feb25.75.jar \
-		gt=${TRIO_DIR}/TRIOS.chr${i}_redone.vcf \
-		out=${TRIO_DIR}/TRIOS.chr${i}_beagle \
+		gt=${IN_DIR}/TRIOS.chr${i}_redone.vcf \
+		out=${IN_DIR}/TRIOS.chr${i}_beagle \
 		chrom=${i} \
 		map=${MAPS}/plink.chr${i}.GRCh38.map
 	)
 echo $CMD1
 eval $CMD1
-tabix -p vcf ${TRIO_DIR}/TRIOS.chr${i}_beagle.vcf.gz
+tabix -p vcf ${IN_DIR}/TRIOS.chr${i}_beagle.vcf.gz
 
 CMD2=$(echo java -Xss5m -Xmx5g -jar ${SCRIPTS}beagle.27Feb25.75.jar \
-		gt=${REF_DIR}/REFS.chr${i}_redone.vcf \
-		out=${REF_DIR}/REFS.chr${i}_beagle \
+		gt=${IN_DIR}/REFS.chr${i}_redone.vcf \
+		out=${IN_DIR}/REFS.chr${i}_beagle \
 		chrom=${i} \
 		map=${MAPS}/plink.chr${i}.GRCh38.map
 	)
 echo $CMD2
 eval $CMD2
-tabix -p vcf ${REF_DIR}/REFS.chr${i}_beagle.vcf.gz
+tabix -p vcf ${IN_DIR}/REFS.chr${i}_beagle.vcf.gz
