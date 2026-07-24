@@ -18,6 +18,12 @@ POP_NAME="HGDP_with_TGP_trios"
 ###Filter out non-reference populations from the reference plink file and convert to plink2, pgen format
 awk "$REF_POPS { print }" ${IN_FILE_REF}.psam > ${IN_DIR}/ref_keep.ids
 plink2 --bfile ${IN_FILE_REF} --keep ${IN_DIR}/ref_keep.ids --make-pgen --out ${IN_FILE_REF}_popsubset
+awk '$REF_POPS {print $1 "_" $2 "\t" $1}' \
+    ${IN_FILE_REF}.psam > ${IN_DIR}/rfmix_three_way_ref.txt
+awk '$REF_POPS {
+    c1 = ($1 == "HGDP" || $1 == "ibs") ? "NonYRI" : $1
+    print c1 "_" $2 "\t" c1
+}' ${IN_FILE_REF}.psam > ${IN_DIR}/rfmix_two_way_ref.txt
 
 ###Filter out non-target populations from the trio plink2 file
 awk "$TEST_POPS { print }" ${IN_FILE_TRIO}.psam > ${IN_DIR}/trio_keep.ids
