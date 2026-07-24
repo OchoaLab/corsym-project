@@ -31,4 +31,4 @@ awk '{
 plink2 --bfile $OUT_DIR/$OUT_FILE \
       --update-ids $OUT_DIR/update_ids.txt \
       --make-bed \
-      --out $OUT_DIR/${OUT_FILE}_fixed
+      --out $OUT_DIR/${OUT_FILE}_idfixed
