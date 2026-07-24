@@ -3,8 +3,8 @@
 ####Ran with Slurm using 50G memory and 1 CPU. This script takes both references and trio files and subsets each to only the populations of interest. The three references and the admixed population test cases. Also, created id keep files to be used downstream in RFMix preparation.
 
 ###Load modules samtools, plink, and plink2
-export PATH="~/miniconda3/envs/samtools/bin:$PATH"
-export PATH="~/miniconda3/envs/plink_test/bin:$PATH"
+source activate samtools
+source activate plink2
 module load Plink/1.90
 
 ###Set the input and output directories
