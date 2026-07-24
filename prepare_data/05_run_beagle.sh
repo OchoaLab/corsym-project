@@ -7,6 +7,7 @@ export PATH="~/miniconda3/envs/samtools/bin:$PATH"
 
 ###Set the input and output directories and the path to the BEAGLE jar file. Set the SLURM_ARRAY_TASK_ID variable to determine which chromosome to process in each task of the job array. 
 ###The map files for each chromosome where downloaded from https://bochet.gcc.biostat.washington.edu/beagle/genetic_maps/
+###Beagle jar is available at https://faculty.washington.edu/browning/beagle/beagle.html
 SCRIPTS=/path/to/beagle_jars/
 IN_DIR=/path/to/data/BEAGLE/
 MAPS=/path/to/HG38_recomb_map/
