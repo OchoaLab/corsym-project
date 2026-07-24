@@ -3,8 +3,8 @@
 ###Ran with Slurm using 25G memory and 1 CPU. This script is used to prepare the data for BEAGLE splitting merged reference and target data into separate VCF files for each chromosome. 
 
 ###Load modules plink2 and samtools
-export PATH="~/miniconda3/envs/samtools/bin:$PATH"
-export PATH="~/miniconda3/envs/plink_test/bin:$PATH"
+source activate samtools
+source activate plink2
 
 ###Set the input and output directories
 IN_DIR=/path/to/data/
