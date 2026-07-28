@@ -23,7 +23,7 @@ for FILE in ${IN_DIR}*.msp.tsv; do
 done
 
 ###Make ancestor input directory and print ancestor input specific files by taking a subset of columns from the individuals ancestry block files.
-ANC_INPUT=$WORK/anc_input
+ANC_INPUT=$OUT_DIR/ANC_INPUT
 mkdir -p ${ANC_INPUT}
 
 for FILE in ${OUT_DIR}/*.tsv; do
