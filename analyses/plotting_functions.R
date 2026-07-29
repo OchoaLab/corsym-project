@@ -2,6 +2,7 @@
 #theme_professional(): the theme used to create all plots from the paper, Kennedy et al., 2026
 #quick_point(): a function designed to create simple geom_point plots with a matching style
 #quick_point_base(): a slightly more in depth version of quick_point() that is designed to plot data where x and y are both between 0 and 1 and we were examining the overall correlation
+#name_fun(): a very simple naming function for plot 1A
 
 #Load necessary libraries
 library(ggplot2)
@@ -132,4 +133,9 @@ quick_point_base <- function(data, x, y,
   geom_abline(intercept = 0,slope=1,linetype="dashed",size=2)
   
   return(p)
+}
+
+#Function to help in naming conventions for plot 1A
+name_fun <- function(value) {
+paste0("Correlation = ", value)
 }
