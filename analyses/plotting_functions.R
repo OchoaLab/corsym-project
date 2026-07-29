@@ -78,7 +78,7 @@ quick_point <- function(data, x, y,
                        color = NULL,
                        point_size = 3,
                        alpha = 0.7) {
-
+  #Standard geom_point with an alpha and point size defined in function 
   p <- ggplot(
     data,
     aes(
@@ -91,6 +91,7 @@ quick_point <- function(data, x, y,
       size = point_size,
       alpha = alpha
     ) +
+    #Load theme_professional and a large base_size, move legend to the bottom
     theme_professional(base_size = 30)+
     theme(
       panel.border = element_rect(linewidth = 3),
@@ -100,11 +101,12 @@ quick_point <- function(data, x, y,
   return(p)
 }
 
+#Define quick_point_base
 quick_point_base <- function(data, x, y,
                        color = NULL,
                        point_size = 3,
                        alpha = 0.7) {
-
+  #Standard geom_point with an alpha and point size defined in function 
   p <- ggplot(
     data,
     aes(
@@ -117,16 +119,17 @@ quick_point_base <- function(data, x, y,
       size = point_size,
       alpha = alpha
     ) +
+    #Load theme_professional and a large base_size, move legend to the bottom
     theme_professional(base_size = 30)+
     theme(
       panel.border = element_rect(linewidth = 3),
       legend.position = "bottom"
     )+
-        scale_y_continuous(limits = c(0,1))+
-        scale_x_continuous(limits = c(0,1))+
+  #Ensure that the 0-1 scale is used for both axes 
+  scale_y_continuous(limits = c(0,1))+
+  scale_x_continuous(limits = c(0,1))+
+  #Add a dashed identity line for an expected correlation of 1
   geom_abline(intercept = 0,slope=1,linetype="dashed",size=2)
-
-
-
+  
   return(p)
 }
