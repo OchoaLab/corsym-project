@@ -17,7 +17,8 @@
 
 ```
 analyses/              Simulated and empirical data analyses
+figures/               Figures from paper: Kennedy et al., 2026
 inference_data/        Exported inference runs
 prepare_data/          Genotype QC, missingness, reference and test set merge, LD runs
-scripts/               Corsym as a function in R 
+scripts/               Corsym as a function in R
 ```
