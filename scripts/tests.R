@@ -18,12 +18,14 @@ Q <- rmvnorm( n, sigma = Covar )
 # calculate Pearson correlation first, then our estimator
 # first test is with random order, where no estimation bias is expected
 # both are close to the true value of `rho` above
-cor( Q )[1,2] # [1] 0.306412 # not bad
-corsym( Q )   # [1] 0.30943  # similar in this case
+cor( Q )[1,2] # [1] 0.306412 # not bad, direct pearson
+pearson( Q )  # [1] 0.3064120 0.1170378 0.4742854 # not bad, wrapper that adds CIs
+corsym( Q )   # [1] 0.3094300 0.1218238 0.4756893 # similar in this case
 
 # now bias the order, which Dashiell found inflated Pearson's estimate
 Q_sorted <- t( apply( Q, 1, sort ) )
 
 # estimate now
 cor( Q_sorted )[1,2] # [1] 0.6644077 # INFLATED!
-corsym( Q_sorted )   # [1] 0.30943   # INVARIANT!
+pearson( Q_sorted )  # [1] 0.6644077 0.5382294 0.7614547 # INFLATED!
+corsym( Q_sorted )   # [1] 0.3094300 0.1218238 0.4756893 # INVARIANT!

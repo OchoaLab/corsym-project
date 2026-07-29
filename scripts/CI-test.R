@@ -1,5 +1,4 @@
 # this script tests empirical CI coverage using simulations
-library(mvtnorm)
 library(tidyverse)
 library(ochoalabtools)
 
@@ -13,10 +12,14 @@ source( 'corsym.R' )
 alpha <- 0.05
 
 # simulate many, many reps, so our CI coverage estimates are more accurate
-n_rep <- 10000
+n_rep <- 1000000
 
 # sample sizes comparable to the real data
 ns <- c(10, 20, 30, 50, 100, 1000)
+# to use subsampling approach
+n_max <- max( ns )
+# length of n vector
+n_n <- length( ns )
 # and correlations in the full range, like the other simulations
 # except no 1 and -1, their CIs never cover the real value
 rhos <- ( -9 : 9 ) / 10
@@ -26,32 +29,40 @@ for ( rho in rhos ) {
     message( 'rho = ', rho )
     # this is true covariance
     Covar <- matrix( c( 1, rho, rho, 1 ), nrow = 2, ncol = 2 )
-    for ( n in ns ) {
-        message( 'n = ', n )
-        # data for this round of tests
-        data_n <- matrix( NA, n_rep, 3 )
-        for ( rep in 1 : n_rep ) {
-            # data has two columns, n rows
-            Q <- rmvnorm( n, sigma = Covar )
-            data_n[ rep, ] <- corsym( Q, alpha = alpha )
-        }
+    # to save time across huge numbers of replicates, pre-process this matrix now
+    # (code adapted from mvtnorm::rmvnorm)
+    ev <- eigen(Covar, symmetric = TRUE)
+    R <- t(ev$vectors %*% (t(ev$vectors) * sqrt(pmax(ev$values, 0))))
+    
+    # initialize data structure for this round of tests
+    data_nn <- vector( 'list', n_n )
+    for ( i in 1 : n_n )
+        data_nn[[ i ]] <- matrix( NA, n_rep, 3 )
+    for ( rep in 1 : n_rep ) {
+        # data has two columns, n_max rows
+        # (code adapted from mvtnorm::rmvnorm)
+        Q <- matrix( rnorm( 2 * n_max ), nrow = n_max ) %*% R
+        
+        # get estimates for nested subsamples of the biggest simulation
+        for ( i in 1 : n_n )
+            data_nn[[ i ]][ rep, ] <- corsym( Q[ 1 : ns[ i ], ], alpha = alpha )
+    }
 
+    for ( i in 1 : n_n ) {
         # make data a bit nicer
+        data_n <- data_nn[[ i ]]
         colnames( data_n ) <- c( 'r', 'CIL', 'CIU' )
         data_n <- as_tibble( data_n )
 
         # confirm frequency in which CIs cover real value
         data_i <- tibble(
-            n = n,
+            n = ns[ i ],
             rho = rho,
             eCI = data_n %>% filter( CIL < rho, rho < CIU ) %>% nrow() / n_rep
         )
         data <- bind_rows( data, data_i )
     }
 }
-
-range( data$eCI )
-# [1] 0.934 0.979
 
 # save data to replot later if needed
 write_tsv( data, 'CI-test.txt.gz' )
