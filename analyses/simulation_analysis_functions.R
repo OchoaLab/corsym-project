@@ -43,18 +43,11 @@ reorder_prop <- function(df, v1, v2, prop = .5) {
 
 #Define simulate_cordata, where rho is the correlation to generate the simulated data around and n is the sample size
 simulate_cordata <- function(rho, n = 1000) {
-
-  #If rho is greater than or a fully positive or negative correlation, it returns a fully positive or negative correlation
-  if (abs(rho) >= 1) {
-    x <- rnorm(n)
-    y <- if (rho > 0) x else -x
-    return(data.frame(x = x, y = y))
-  } else {
     #Define the covariance matrix
     Sigma <- matrix(c(1, rho, rho, 1), nrow = 2)
     #Generate simple multivariate data based on the rho argument centered around a mean of 0
     xy <- mvrnorm(n, mu = c(0, 0), Sigma = Sigma)
-    return(data.frame(x = xy[,1], y = xy[,2]))
+    return(data.frame(rho = rho, x = xy[,1], y = xy[,2]))
   }
 }
 
