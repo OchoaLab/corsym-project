@@ -61,10 +61,14 @@ plot1a_cor_df <- plot1a_data %>%
   )
 write.csv(plot1a_cor_df, file = plot1a_cor_df.csv, row.names = FALSE,quote=false)
 
+#Clear r environment
+rm(list = ls())
+
 ############################
 #Figure 1B Data
 ############################
 
+               
 ############################
 #Figure 1C Data
 ############################
@@ -72,3 +76,46 @@ write.csv(plot1a_cor_df, file = plot1a_cor_df.csv, row.names = FALSE,quote=false
 ############################
 #Figure 1D Data
 ############################
+#Simulate data by rho for -1 to 1, by 0.01 for n=1000 
+rhos <- seq(-0.99, 0.99, by = 0.01)
+n    <- 1000
+
+#Generate data and apply ordering
+bias_dataset <- do.call(rbind, lapply(rhos, simulate_cordata)
+bias_dataset <- reorder_prop(bias_dataset,"x","y",1)
+bias_dataset <- reorder_prop(bias_dataset,"x","y",.75)
+bias_dataset <- reorder_prop(bias_dataset,"x","y",.5)
+bias_dataset <- reorder_prop(bias_dataset,"x","y",.25)
+bias_dataset$x.0<-bias_dataset$x
+bias_dataset$y.0<-bias_dataset$y
+
+#Pivot data for calculating correlation coefficients                        
+bias_dataset<-bias_dataset %>%
+  pivot_longer(
+    cols = starts_with(c("x.", "y.")),
+    names_to = c(".value", "index"),
+    names_pattern = "([xy])\\.(.+)"
+  ) %>%
+  mutate(bias = as.numeric(index))
+
+#Calculate Correlations and export dataset                        
+plot_1D_data<-data.frame(Rho=numeric(),Bias=numeric(),Cor=numeric(),Pear=numeric())
+for (rho_num in unique(bias_dataset$rho)){
+  for (bias_prop in c(0,.25,.5,0.75,1)) {
+    bias_run<-subset(bias_dataset, rho == rho_num & bias==bias_prop)
+    plot_1D_data <- plot_1D_data %>%
+    add_row(Rho=rho_num,
+            Bias=bias_prop,
+            Cor=corsym(bias_run$x,bias_run$y),
+            Pear=pearson(bias_run$x,bias_run$y),
+           )
+  }
+}
+write.csv(plot_1D_data, file = plot_1D_data.csv, row.names = FALSE,quote=false)
+
+#Clear r environment
+rm(list = ls())
+                        
+
+
+                        
