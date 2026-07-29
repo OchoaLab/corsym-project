@@ -58,6 +58,7 @@ simulate_cordata <- function(rho, n = 1000) {
   }
 }
 
+#Define simulate_non_normal_cordata, where rho is the list of correlations to generate the simulated data, n is the sample size, distribution is the kind of distribution you intend to simulate if no shapes are selected and shape1 and shape2 are used to define the shape of the data in the beta probability distribution (alpha and beta, respectively)
 simulate_non_normal_cordata <- function(rho,
                                 n=1000,
                                 distribution = c("slightly_skewed",
@@ -68,12 +69,12 @@ simulate_non_normal_cordata <- function(rho,
                                 shape1 = NULL,
                                 shape2 = NULL,
                                 seed = NULL) {
-  n=1000
-
+  #Set seed if seed is chosen
   if (!is.null(seed))
     set.seed(seed)
 
-  # Choose Beta parameters
+  #Choose Beta parameters
+  #If no shapes were selected, use the predefined distribution parameters instead
   if (is.null(shape1) || is.null(shape2)) {
 
     distribution <- match.arg(distribution)
@@ -86,33 +87,35 @@ simulate_non_normal_cordata <- function(rho,
       symmetric         = c(2, 2),
       u_shaped          = c(0.5, 0.5)
     )
-
     shape1 <- params[1]
     shape2 <- params[2]
   }
 
+  #Prepare output df
   out <- vector("list", length(rho))
 
+  #For rhos chosen, create copula (a multivariate distribution with uniform margins separate from marginal distributions) 
   for (i in seq_along(rho)) {
-
-  cop <- copula::normalCopula(rho, dim = 2)
-
-  model <- copula::mvdc(
-   copula = cop,
+    
+    cop <- copula::normalCopula(rho, dim = 2)
+    
+    #For the copula, create the marginal distribution based on the beta parameters/distribution
+    model <- copula::mvdc(
+    copula = cop,
     margins = c("beta", "beta"),
     paramMargins = list(
-     list(shape1 = shape1, shape2 = shape2),
-     list(shape1 = shape1, shape2 = shape2)
-   )
-  )
-
-X <- copula::rMvdc(n, model)
-
-    out[[i]] <- data.frame(
-      rho = rho[i],
-      x = X[,1],
-      y = X[,2]
+      list(shape1 = shape1, shape2 = shape2),
+      list(shape1 = shape1, shape2 = shape2)
     )
+    )
+
+    #Generate simulated non-normal data and export and return
+    X <- copula::rMvdc(n, model)
+    out[[i]] <- data.frame(
+    rho = rho[i],
+    x = X[,1],
+    y = X[,2]
+  )
   }
 
   do.call(rbind, out)
