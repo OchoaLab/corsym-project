@@ -1,6 +1,7 @@
 # implementation of the method proposed in this paper
 
-corsym <- function( Q, q2 = NULL ) {
+# TODO: do we need to handle missingness?
+corsym <- function( Q, q2 = NULL, alpha = 0.05 ) {
     # validate inputs
     if ( missing( Q ) )
         stop( '`Q` is required!' )
@@ -41,5 +42,14 @@ corsym <- function( Q, q2 = NULL ) {
     covar_u <- an * covar + bn * sigma_sq
 
     # finally, estimate correlation and return!
-    return( covar_u / sigma_sq_u )
+    r <- covar_u / sigma_sq_u
+
+    # use Fisher's transformation to estimate confidence intervals
+    z <- ( log( 1 + r ) - log( 1 - r ) ) / 2
+    rad <- stats::qnorm( alpha / 2, lower.tail = FALSE ) / sqrt( n - 3 )
+    # alpha confidence intervals
+    CIL <- tanh(z - rad)
+    CIU <- tanh(z + rad)
+    
+    return( c(r, CIL, CIU) )
 }
