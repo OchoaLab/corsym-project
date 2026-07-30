@@ -67,17 +67,68 @@ rm(list = ls())
 ############################
 #Figure 1B Data
 ############################
+#Simulate data by rho for -1 to 1 by 0.01 for multiple sample sizes
+rhos <- seq(-1, 1, by = 0.01)
+plot1b_data<-data.frame(Rho=numeric(),Size=numeric(),run=numeric(),corsym=numeric(),pearson=numeric())
+for (rho_num in rhos){
+  #Iterate over sample sizes
+  for (n in c(10,50,100,500,1000)){
+    #Iterate over reps per sample size
+    for (i in (1:10)){
+      samples <- simulate_cordata(rho_num,n)%>%
+        reorder_prop(.,"x","y",prop=1)
+      plot1b_data <- plot1b_data %>%
+        add_row(Rho=rho_num,Size=n,run=i,corsym=corsym(samples$x.1,samples$y.1),
+                pearson=pearson(samples$x.1,samples$y.1)
+        )
+    }
+  }
+}
 
-               
+#Select and rename columns and export
+plot1b_data<-plot1b_data[,c("Rho","Size","run","corsym","pearson")]
+colnames(plot1b_data)<-c("Rho","Size","run","Cor","Pear","Type")
+write.csv(plot1b_data, file = plot1b_data.csv, row.names = FALSE,quote=false)
+
+#Clear r environment
+rm(list = ls())               
 ############################
 #Figure 1C Data
 ############################
+#Simulate data by rho for -1 to 1 by 0.09 for multiple sample sizes
+rhos <- seq(-1, 1, by = 0.09)
+plot1c_data<-data.frame(Rho=numeric(),Size=numeric(),run=numeric(),corsym_r=numeric(),corsym_o=numeric(),pearson_r=numeric(),pearson_o=numeric())
+for (rho_num in rhos){
+  #Iterate over sample sizes
+  for (n in c(10,20,30,40,50,60,70,80,90,100)){
+    #Iterate over reps per sample size
+    for (i in (1:100)){
+      samples <- simulate_cordata(rho_num,n)%>%
+      reorder_prop(.,"x","y",prop=1)
+      plot1c_data <- plot1c_data %>%
+        add_row(Rho=rho_num,Size=n,run=i,corsym_r=corsym(samples$x,samples$y),
+                corsym_o=corsym(samples$x.1,samples$y.1),
+                pearson_r=cor(samples$x,samples$y),
+                pearson_o=cor(samples$x.1,samples$y.1)
+        )
+    }
+  }
+}
 
+plot1c_data <- plot1c_data %>%
+mutate(Delta_r=pearson_o-corsym_o)%>%
+group_by(Size,Rho)%>%
+summarise(variance_r=var(Delta_r))
+
+write.csv(plot1c_data, file = plot1c_data.csv, row.names = FALSE,quote=false)
+
+#Clear r environment
+rm(list = ls())       
 ############################
 #Figure 1D Data
 ############################
 #Simulate data by rho for -1 to 1, by 0.01 for n=1000 
-rhos <- seq(-0.99, 0.99, by = 0.01)
+rhos <- seq(-1, 1, by = 0.01)
 n    <- 1000
 
 #Generate data and apply ordering
