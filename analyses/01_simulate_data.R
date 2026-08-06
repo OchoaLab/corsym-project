@@ -25,7 +25,7 @@ plot1a_data <-sim_data %>%
   transmute(rho, row_index,
             x = x, y = y, type = "Random") %>%
   bind_rows(
-    dat %>%
+    sim_data %>%
       #Reordered and name the reordered data as such
       mutate(row_index = row_number(),
              var3 = ifelse(x > y, y, x),
