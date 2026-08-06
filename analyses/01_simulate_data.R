@@ -1,5 +1,4 @@
 ###This script simulates data from the simulated functions. Data is reordered as necessary for testing and corsym and pearsons' R are calculated for each run. This data acts as input into the plotting script
-
 # load new function
 source( 'corsym.R' )
 source( 'simulation_analysis_functions.R' )
@@ -41,7 +40,7 @@ plot1a_data <-sim_data %>%
                      levels = c("Random", "Ordered")),
          Plot_rename="True Rho"
   )
-write.csv(plot1_data, file = plot1a_data.csv, row.names = FALSE,quote=false)
+write.csv(plot1a_data, file = "plot1a_data.csv", row.names = FALSE,quote=FALSE)
 
 plot1a_cor_df <- plot1a_data %>%
   #Rename for better plotting
@@ -59,10 +58,8 @@ plot1a_cor_df <- plot1a_data %>%
        "<i>r<sub>p</sub></i> = %.2f<br><i>r<sub>c</sub></i> = %.2f",
     R, corR)
   )
-write.csv(plot1a_cor_df, file = plot1a_cor_df.csv, row.names = FALSE,quote=false)
+write.csv(plot1a_cor_df, file = "plot1a_cor_df.csv", row.names = FALSE,quote=FALSE)
 
-#Clear r environment
-rm(list = ls())
 
 ############################
 #Figure 1B Data
@@ -87,11 +84,9 @@ for (rho_num in rhos){
 
 #Select and rename columns and export
 plot1b_data<-plot1b_data[,c("Rho","Size","run","corsym","pearson")]
-colnames(plot1b_data)<-c("Rho","Size","run","Cor","Pear","Type")
-write.csv(plot1b_data, file = plot1b_data.csv, row.names = FALSE,quote=false)
+colnames(plot1b_data)<-c("Rho","Size","run","CorSym","Pearson")
+write.csv(plot1b_data, file = "plot1b_data.csv", row.names = FALSE,quote=FALSE)
 
-#Clear r environment
-rm(list = ls())               
 ############################
 #Figure 1C Data
 ############################
@@ -108,8 +103,8 @@ for (rho_num in rhos){
       plot1c_data <- plot1c_data %>%
         add_row(Rho=rho_num,Size=n,run=i,corsym_r=corsym(samples$x,samples$y),
                 corsym_o=corsym(samples$x.1,samples$y.1),
-                pearson_r=cor(samples$x,samples$y),
-                pearson_o=cor(samples$x.1,samples$y.1)
+                pearson_r=pearson(samples$x,samples$y),
+                pearson_o=pearson(samples$x.1,samples$y.1)
         )
     }
   }
@@ -120,10 +115,8 @@ mutate(Delta_r=pearson_o-corsym_o)%>%
 group_by(Size,Rho)%>%
 summarise(variance_r=var(Delta_r))
 
-write.csv(plot1c_data, file = plot1c_data.csv, row.names = FALSE,quote=false)
-
-#Clear r environment
-rm(list = ls())       
+write.csv(plot1c_data, file = "plot1c_data.csv", row.names = FALSE,quote=FALSE)
+     
 ############################
 #Figure 1D Data
 ############################
@@ -132,13 +125,16 @@ rhos <- seq(-1, 1, by = 0.01)
 n    <- 1000
 
 #Generate data and apply ordering
-bias_dataset <- do.call(rbind, lapply(rhos, simulate_cordata)
-bias_dataset <- reorder_prop(bias_dataset,"x","y",1)
-bias_dataset <- reorder_prop(bias_dataset,"x","y",.75)
-bias_dataset <- reorder_prop(bias_dataset,"x","y",.5)
-bias_dataset <- reorder_prop(bias_dataset,"x","y",.25)
-bias_dataset$x.0<-bias_dataset$x
-bias_dataset$y.0<-bias_dataset$y
+bias_dataset <- do.call(rbind, lapply(rhos, simulate_cordata))
+
+bias_dataset <- Reduce(
+  \(bias_dataset, value) reorder_prop(bias_dataset, "x", "y", value),
+  c(1, .75, .5, .25),
+  init = bias_dataset
+)
+  
+bias_dataset<-bias_dataset%>%
+  rename(x.0=x,y.0=y)
 
 #Pivot data for calculating correlation coefficients                        
 bias_dataset<-bias_dataset %>%
@@ -150,11 +146,11 @@ bias_dataset<-bias_dataset %>%
   mutate(bias = as.numeric(index))
 
 #Calculate Correlations and export dataset                        
-plot_1D_data<-data.frame(Rho=numeric(),Bias=numeric(),Cor=numeric(),Pear=numeric())
+plot_1d_data<-data.frame(Rho=numeric(),Bias=numeric(),Cor=numeric(),Pear=numeric())
 for (rho_num in unique(bias_dataset$rho)){
   for (bias_prop in c(0,.25,.5,0.75,1)) {
     bias_run<-subset(bias_dataset, rho == rho_num & bias==bias_prop)
-    plot_1D_data <- plot_1D_data %>%
+    plot_1d_data <- plot_1d_data %>%
     add_row(Rho=rho_num,
             Bias=bias_prop,
             Cor=corsym(bias_run$x,bias_run$y),
@@ -162,7 +158,7 @@ for (rho_num in unique(bias_dataset$rho)){
            )
   }
 }
-write.csv(plot_1D_data, file = plot_1D_data.csv, row.names = FALSE,quote=false)
+write.csv(plot_1d_data, file = "plot_1d_data.csv", row.names = FALSE,quote=FALSE)
 
 #Clear r environment
 rm(list = ls())
