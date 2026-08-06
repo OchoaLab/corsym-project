@@ -1,6 +1,5 @@
 ###This script simulates data from the simulated functions. Data is reordered as necessary for testing and corsym and pearsons' R are calculated for each run. This data acts as input into the plotting script
 # load new function
-source( 'corsym.R' )
 source( 'simulation_analysis_functions.R' )
 
 # load libraries
