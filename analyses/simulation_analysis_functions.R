@@ -48,7 +48,6 @@ simulate_cordata <- function(rho, n = 1000) {
     #Generate simple multivariate data based on the rho argument centered around a mean of 0
     xy <- mvrnorm(n, mu = c(0, 0), Sigma = Sigma)
     return(data.frame(rho = rho, x = xy[,1], y = xy[,2]))
-  }
 }
 
 #Define simulate_non_normal_cordata, where rho is the list of correlations to generate the simulated data, n is the sample size, distribution is the kind of distribution you intend to simulate if no shapes are selected and shape1 and shape2 are used to define the shape of the data in the beta probability distribution (alpha and beta, respectively)
