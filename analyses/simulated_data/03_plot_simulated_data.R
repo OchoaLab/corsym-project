@@ -1,6 +1,7 @@
 ###This script plots simulated data
 # load new function
 source( 'simulation_analysis_functions.R' )
+source( 'plotting_functions.R' )
 
 # load libraries
 library(MASS)
