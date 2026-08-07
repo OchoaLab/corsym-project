@@ -113,5 +113,3 @@ simulate_non_normal_cordata <- function(rho,
   do.call(rbind, out)
 }
 
-    return( list( x = x, y = y, n = n ) )
-}
