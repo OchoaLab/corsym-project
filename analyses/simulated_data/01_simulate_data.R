@@ -23,7 +23,7 @@ plot1a_data <- sim_data%>%
   mutate(type = "Random") %>%
   bind_rows(
   cbind(sim_data %>% select(-c(x,y)),
-        reorder_test(sim_data))%>%
+        reorder_xy(sim_data))%>%
     mutate(type = "Ordered")
   ) %>%
   #Round for easy visuals and make Random vs Ordered a type for facetting
