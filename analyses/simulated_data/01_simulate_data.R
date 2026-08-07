@@ -122,15 +122,12 @@ n    <- 1000
 #Generate data and apply ordering
 bias_dataset <- do.call(rbind, lapply(rhos, simulate_cordata))
 
-samples_reordered <- samples%>%
-  reorder_xy(.,1)
-
 bias_dataset <- Reduce(
   \(bias_dataset, value) reorder_xy_rename(bias_dataset, value),
   c(1, .75, .5, .25),
   init = bias_dataset
 )
-  
+
 bias_dataset<-bias_dataset%>%
   rename(x.0=x,y.0=y)
 
@@ -144,11 +141,11 @@ bias_dataset<-bias_dataset %>%
   mutate(bias = as.numeric(index))
 
 #Calculate Correlations and export dataset                        
-plot_1d_data<-data.frame(Rho=numeric(),Bias=numeric(),Cor=numeric(),Pear=numeric())
+plot1d_data<-data.frame(Rho=numeric(),Bias=numeric(),Cor=numeric(),Pear=numeric())
 for (rho_num in unique(bias_dataset$rho)){
-  for (bias_prop in c(0,.25,.5,0.75,1)) {
+  for (bias_prop in c(0,.25,.5,.75,1)) {
     bias_run<-subset(bias_dataset, rho == rho_num & bias==bias_prop)
-    plot_1d_data <- plot_1d_data %>%
+    plot1d_data <- plot1d_data %>%
     add_row(Rho=rho_num,
             Bias=bias_prop,
             Cor=corsym(bias_run$x,bias_run$y)[1],
@@ -156,7 +153,8 @@ for (rho_num in unique(bias_dataset$rho)){
            )
   }
 }
-write.csv(plot_1d_data, file = "plot_1d_data.csv", row.names = FALSE,quote=FALSE)
+
+write.csv(plot1d_data, file = "plot1d_data.csv", row.names = FALSE,quote=FALSE)
 
 #Clear r environment
-rm(list = ls())    
+rm(list = ls())
