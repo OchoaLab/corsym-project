@@ -18,7 +18,7 @@ library(patchwork)
 plot1a_data<-read.csv("plot1a_data.csv")
 plot1b_data<-read.csv("plot1b_data.csv")
 plot1c_data<-read.csv("plot1c_data.csv")
-plot_1d_data<-read.csv("plot_1d_data.csv")
+plot1d_data<-read.csv("plot1d_data.csv")
 plot1a_cor_df<-read.csv("plot1a_cor_df.csv")
 
 p1a<-plot1a_data%>%
@@ -33,7 +33,7 @@ p1a<-plot1a_data%>%
     fill = "grey70",
     linewidth = 1,
     alpha = 0.25)  +
-  facet_grid(type~Rho,labeller = labeller(Rho = as_labeller(name_fun), type = label_value))+
+  facet_grid(factor(type,levels = c("Random","Ordered"))~Rho,labeller = labeller(Rho = as_labeller(name_fun), type = label_value))+
   labs(y="Vector 2",x="Vector 1") +
   theme(
     legend.position = "bottom",
@@ -92,7 +92,7 @@ p1c<-ggplot(plot1c_data,aes(x=Size,y=variance_r,col=Rho))+
   theme_professional(base_size=30)+
   theme(panel.border = element_rect(linewidth=3))
 
-p1d<-plot_1d_data%>%
+p1d<-plot1d_data%>%
   ggplot(.,aes(x=Rho,y=Pear,col=factor(Bias))) +
   geom_point()+
   geom_point(shape=15,size=5,alpha=.1)+
