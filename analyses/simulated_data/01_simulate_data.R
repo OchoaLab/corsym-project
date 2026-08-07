@@ -6,6 +6,7 @@ source( 'simulation_analysis_functions.R' )
 library(MASS)
 library(tidyverse)
 library(copula)
+library(corsym)
 
 ############################
 #Figure 1A Data
@@ -18,27 +19,20 @@ n=1000
 sim_data <- do.call(rbind, lapply(rhos, simulate_cordata))
 
 #Create and export the necessary data for plot 1a, a dataframe with the information of the fully ordered and non-ordered samples, and a correlation dataframe saving the specific correlation values for text addition
-plot1a_data <-sim_data %>%
-  mutate(row_index = row_number())%>%
-  #Ensure the original data is assigned as random
-  transmute(rho, row_index,
-            x = x, y = y, type = "Random") %>%
+plot1a_data <- sim_data%>%
+  mutate(type = "Random") %>%
   bind_rows(
-    sim_data %>%
-      #Reordered and name the reordered data as such
-      mutate(row_index = row_number(),
-             var3 = ifelse(x > y, y, x),
-             var4 = ifelse(x > y, x, y)) %>%
-      transmute(rho, row_index,
-                x = var3, y = var4, type = "Ordered")
+  cbind(sim_data %>% select(-c(x,y)),
+        reorder_test(sim_data))%>%
+    mutate(type = "Ordered")
   ) %>%
-  filter(!is.na(x), !is.na(y))%>%
   #Round for easy visuals and make Random vs Ordered a type for facetting
   mutate(rho=round(rho,digits = 3),
          type= factor(type,
                      levels = c("Random", "Ordered")),
          Plot_rename="True Rho"
   )
+
 write.csv(plot1a_data, file = "plot1a_data.csv", row.names = FALSE,quote=FALSE)
 
 plot1a_cor_df <- plot1a_data %>%
@@ -47,15 +41,15 @@ plot1a_cor_df <- plot1a_data %>%
   #Get summary correlation coefficients
   group_by(type, Rho) %>%
   summarise(
-    R = pearson(x, y),
-    corR = corsym(x,y),
+    pear_r = pearson(x, y)[1],
+    cor_r = corsym(x,y)[1],
     .groups = "drop"
   )%>%
   #Make nice labelled correlations for plotting
   mutate(
     label = sprintf(
        "<i>r<sub>p</sub></i> = %.2f<br><i>r<sub>c</sub></i> = %.2f",
-    R, corR)
+    pear_r, cor_r)
   )
 write.csv(plot1a_cor_df, file = "plot1a_cor_df.csv", row.names = FALSE,quote=FALSE)
 
@@ -72,10 +66,10 @@ for (rho_num in rhos){
     #Iterate over reps per sample size
     for (i in (1:10)){
       samples <- simulate_cordata(rho_num,n)%>%
-        reorder_prop(.,"x","y",prop=1)
+        reorder_xy(.,1)
       plot1b_data <- plot1b_data %>%
-        add_row(Rho=rho_num,Size=n,run=i,corsym=corsym(samples$x.1,samples$y.1),
-                pearson=pearson(samples$x.1,samples$y.1)
+        add_row(Rho=rho_num,Size=n,run=i,corsym=corsym(samples$x,samples$y)[1],
+                pearson=pearson(samples$x,samples$y)[1]
         )
     }
   }
