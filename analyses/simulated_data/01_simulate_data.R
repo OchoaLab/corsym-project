@@ -61,6 +61,7 @@ write.csv(plot1a_cor_df, file = "plot1a_cor_df.csv", row.names = FALSE,quote=FAL
 rhos <- seq(-1, 1, by = 0.01)
 plot1b_data<-data.frame(Rho=numeric(),Size=numeric(),run=numeric(),corsym=numeric(),pearson=numeric())
 for (rho_num in rhos){
+  print(rho_num)
   #Iterate over sample sizes
   for (n in c(10,50,100,500,1000)){
     #Iterate over reps per sample size
@@ -91,13 +92,14 @@ for (rho_num in rhos){
   for (n in c(10,20,30,40,50,60,70,80,90,100)){
     #Iterate over reps per sample size
     for (i in (1:100)){
-      samples <- simulate_cordata(rho_num,n)%>%
-      reorder_prop(.,"x","y",prop=1)
+      samples <- simulate_cordata(rho_num,n)
+      samples_reordered <- samples%>%
+        reorder_xy(.,1)
       plot1c_data <- plot1c_data %>%
         add_row(Rho=rho_num,Size=n,run=i,corsym_r=corsym(samples$x,samples$y),
-                corsym_o=corsym(samples$x.1,samples$y.1),
+                corsym_o=corsym(samples_reordered$x,samples_reordered$y),
                 pearson_r=pearson(samples$x,samples$y),
-                pearson_o=pearson(samples$x.1,samples$y.1)
+                pearson_o=pearson(samples_reordered$x,samples_reordered$y)
         )
     }
   }
@@ -120,8 +122,11 @@ n    <- 1000
 #Generate data and apply ordering
 bias_dataset <- do.call(rbind, lapply(rhos, simulate_cordata))
 
+samples_reordered <- samples%>%
+  reorder_xy(.,1)
+
 bias_dataset <- Reduce(
-  \(bias_dataset, value) reorder_prop(bias_dataset, "x", "y", value),
+  \(bias_dataset, value) reorder_xy_rename(bias_dataset, value),
   c(1, .75, .5, .25),
   init = bias_dataset
 )
@@ -146,16 +151,12 @@ for (rho_num in unique(bias_dataset$rho)){
     plot_1d_data <- plot_1d_data %>%
     add_row(Rho=rho_num,
             Bias=bias_prop,
-            Cor=corsym(bias_run$x,bias_run$y),
-            Pear=pearson(bias_run$x,bias_run$y),
+            Cor=corsym(bias_run$x,bias_run$y)[1],
+            Pear=pearson(bias_run$x,bias_run$y)[1],
            )
   }
 }
 write.csv(plot_1d_data, file = "plot_1d_data.csv", row.names = FALSE,quote=FALSE)
 
 #Clear r environment
-rm(list = ls())
-                        
-
-
-                        
+rm(list = ls())    
