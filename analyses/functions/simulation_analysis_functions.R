@@ -6,40 +6,7 @@
 #Load required libraries
 library(MASS)
 library(copula)
-
-#Defined reorder_prop function, where df is the dataframe to edit, v1 is vector x, v2 is vector y, and prop is the proportion of samples to reorder on
-reorder_prop <- function(df, v1, v2, prop = .5) {
-
-  #Sample rows based on proportion and slice data into the set to be reordered and the set to remain the same
-  idx <- sample(nrow(df), size = floor(prop * nrow(df)))
-  reordered <- slice(df, idx)
-  unordered  <- slice(df, -idx)
-
-  #For data to be reordered, switch v1 and v2 and create new variables named [[v1]].[[Proportion]] and [[v2]].[[Proportion]], with the reordered samples  
-  reordered<-reordered%>%
-    mutate(
-      !!paste0(v1,".",as.character(prop)) := case_when(
-        .data[[v1]] > .data[[v2]] ~ .data[[v1]],
-        .data[[v2]] > .data[[v1]] ~ .data[[v2]],
-        .data[[v2]] == .data[[v1]] ~ .data[[v1]]
-      ),
-      !!paste0(v2,".",as.character(prop)) := case_when(
-        .data[[v1]] > .data[[v2]] ~ .data[[v2]],
-        .data[[v2]] > .data[[v1]] ~ .data[[v1]],
-        .data[[v2]] == .data[[v1]] ~ .data[[v2]]
-      )
-    )
-  #For data that remains unordered, create new variables named [[v1]].[[Proportion]] and [[v2]].[[Proportion]], where v1 stays as the new [[v1]].[[Proportion]] and v2 remains [[v2]].[[Proportion]]   
-  unordered<-unordered%>%
-    mutate(
-      !!paste0(v1,".",as.character(prop)) := .data[[v1]],
-      !!paste0(v2,".",as.character(prop)) := .data[[v2]],
-      )
-  
-  df <- bind_rows(reordered, unordered) 
-  
-  return(df)
-}
+librar(corsym)
 
 #Define simulate_cordata, where rho is the correlation to generate the simulated data around and n is the sample size
 simulate_cordata <- function(rho, n = 1000) {
@@ -113,3 +80,17 @@ simulate_non_normal_cordata <- function(rho,
   do.call(rbind, out)
 }
 
+#Small Function to ensure reorder works correctly
+reorder_xy <- function(df, prop){
+  df_reorder <- as.data.frame(partial_order(as.matrix(df[c("x","y")],q=prop)))
+  colnames(df_reorder)<-c("x","y")
+  return(df_reorder)
+}
+
+#Small Function to ensure reorder works correctly
+reorder_xy_rename <- function(df, prop){
+  df_reorder <- as.data.frame(partial_order(as.matrix(df[c("x","y")],q=prop)))
+  colnames(df_reorder)<-c(paste0("x.",as.character(prop)),paste0("y.",as.character(prop)))
+  df<-cbind(df,df_reorder)
+  return(df)
+}
