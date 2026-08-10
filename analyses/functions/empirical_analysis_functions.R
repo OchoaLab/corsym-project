@@ -1,7 +1,7 @@
 #Simple scripts designed to run packages from R package CorSym for easier output
 
 #A script designed to run a number of column pairs using the CorSym package's corsym and pearson functions, extract and return
-run_pair <- function(dat, col1, col2, fun) {
+run_pair <- function(dat, col1, col2, fun, name) {
   
   vals <- fun(dat[[col1]], dat[[col2]])
   
@@ -14,6 +14,7 @@ run_pair <- function(dat, col1, col2, fun) {
       CIL = vals[2],
       CIU = vals[3],      
       n = nrow(dat),
+      R_type = paste0(name),
       row.names = NULL
     )
   )
