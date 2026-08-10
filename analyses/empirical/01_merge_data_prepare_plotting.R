@@ -105,7 +105,7 @@ child_values_to_grab<-list("anc.NonYRI.2way","anc.YRI.2way")
 for (cv in child_values_to_grab){
   P1<-paste0("P1.",cv)
   P2<-paste0("P2.",cv)
-  df_2way<-randomize_order_filter(df_2way,P1,P2)
+  df_2way<-randomize_order_filter(df_2way,P1,P2,n=rep)
 }
 
 #Export File
