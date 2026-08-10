@@ -1,7 +1,7 @@
 ##This script prepares data for plotting various figures on the empirical dataset.
 #This script will output a "Two-way" and "Three-way" analysis dataset with all important information held within
 
-source( 'corsym.R' )
+source( 'empirical_analysis_functions.R' )
 
 # load libraries
 library(data.table)
@@ -99,64 +99,39 @@ for (pv in parent_split_values){
 df_2way <- df_2way %>%
   filter(!is.na(p1) & p1!=0)
 
-
 #########Extract Two Way Correlations
 #Randomize two way assignment
-df_2way$rand_assignment <- sample(1:2, size = nrow(df_2way), replace = TRUE)
 child_values_to_grab<-list("anc.NonYRI.2way","anc.YRI.2way")
 for (cv in child_values_to_grab){
   P1<-paste0("P1.",cv)
   P2<-paste0("P2.",cv)
-  df_2way<-df_2way %>%
-    rowwise() %>%
-    mutate(tmp = list(sample(c(!!sym(P1),!!sym(P2))))) %>%
-    mutate(!!paste0(P1,".rand") := tmp[1], !!paste0(P2,".rand") := tmp[2]) %>%
-    dplyr::select(-c(tmp))
+  df_2way<-randomize_order_filter(df_2way,P1,P2)
 }
 
 #Export File
 write.csv(df_2way, file = "2way_analysis.csv", row.names = FALSE,quote=FALSE)
 
-df_2way$P1.anc.YRI.2way
-
 col_pairs <- list(
-  c("P1.anc.YRI.2way", "P2.anc.YRI.2way",corsym),
-  c("P1.anc.YRI.2way.rand", "P1.anc.YRI.2way.rand",corsym),
-  c("P1.anc.YRI.2way", "P2.anc.YRI.2way",pearson),
-  c("P1.anc.YRI.2way.rand", "P1.anc.YRI.2way.rand",pearson)  
+  c("P1.anc.YRI.2way", "P2.anc.YRI.2way",corsym,"corsym"),
+  c("P1.anc.YRI.2way.rand", "P2.anc.YRI.2way.rand",corsym,"corsym"),
+  c("P1.anc.YRI.2way", "P2.anc.YRI.2way",pearson,"pearson"),
+  c("P1.anc.YRI.2way.rand", "P2.anc.YRI.2way.rand",pearson,"pearson")  
 )
 
-run_pair <- function(dat, col1, col2, fun) {
-  
-  vals <- fun(dat[[col1]], dat[[col2]])
-  
-  cbind(
-    data.frame(
-      group = dat$coh[1],
-      name_of_1 = col1,
-      name_of_2 = col2,
-      R = vals[1],
-      CIL = vals[2],
-      CIU = vals[3],      
-      n = nrow(dat),
-      row.names = NULL
-    )
-  )
-}
-result <- do.call(rbind,
+df_2way_corr <- do.call(rbind,
                   lapply(split(df_2way, df_2way$coh), function(dat) {
                     
                     do.call(rbind,
                             lapply(col_pairs, function(p)
-                              run_pair(dat, p[[1]], p[[2]], p[[3]])
+                              run_pair(dat, p[[1]], p[[2]], p[[3]], p[[4]])
                             )
                     )
                     
                   })
 )      
 
-
-
+#Export File
+write.csv(df_2way_corr, file = "2way_correlations.csv", row.names = FALSE,quote=FALSE)
 
 ####################
 ###Admixture Plot Dataset
