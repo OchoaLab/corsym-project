@@ -1,13 +1,14 @@
 ##This script prepares data for plotting various figures on the empirical dataset.
 #This script will output a "Two-way" and "Three-way" analysis dataset with all important information held within
 
-source( 'empirical_analysis_functions.R' )
+source( "empirical_analysis_functions.R" )
 
 # load libraries
 library(data.table)
 library(purrr)
 library(tidyr)
 library(dplyr)
+library(corsym)
 
 remove_D_columns <- function(df) {
   df[, !grepl("^D[0-9]", names(df)), drop = FALSE]
@@ -48,7 +49,7 @@ rfm <- rfm %>%
 #########ANCESTOR
 #Load ANCESTOR output
 anc<-read.csv("C:/Users/Ictinike/Documents/Labs/GoldbergLab/Papers/hgdp/ancestor_3way_HGDP.txt",sep="",header=FALSE)
-colnames(anc)<-c("T1","P1.anc.NAM","P1.anc.IBS","P1.anc.YRI","P2.anc.NAM","P2.anc.IBS","P2.anc.YRI.2")
+colnames(anc)<-c("T1","P1.anc.NAM","P1.anc.IBS","P1.anc.YRI","P2.anc.NAM","P2.anc.IBS","P2.anc.YRI")
 anc <- anc %>%
   mutate(basename = basename(T1)) %>%
   separate(basename,    into = c("coh", "D1"),
@@ -76,50 +77,117 @@ df$adm.NonYRI<-df$adm.NAM+df$adm.IBS
 
 
 ####################
-###Two Way Dataset
+###Empirical Dataset
 ####################
 #Hold df to reuse
-df_2way<-df
+df_filter<-df
 
-#########Extract Two Way Inference Dataset
+#########Extract Inference Dataset
 #This splits parent true ancestry into P1 and P2 in the same way ANCESTOR output is
 parent_split_values<-list("sex","adm.NAM","adm.IBS","adm.YRI","adm.NonYRI","rfm.NAM","rfm.IBS","rfm.YRI")
 for (pv in parent_split_values){
-  df_2way<-df_2way%>%
+  df_filter<-df_filter%>%
     left_join(df %>% dplyr::select(id, pv) %>% rename_with(~ paste0("P1.", .x),-id),
-              by = c("p1" = "id"))
-}
-for (pv in parent_split_values){
-  df_2way<-df_2way%>%
+              by = c("p1" = "id"))%>%
     left_join(df %>% dplyr::select(id, pv) %>% rename_with(~ paste0("P2.", .x),-id),
               by = c("p2" = "id"))
 }
 
 #remove non-children samples
-df_2way <- df_2way %>%
+df_filter <- df_filter %>%
   filter(!is.na(p1) & p1!=0)
 
-#########Extract Two Way Correlations
-#Randomize two way assignment
-child_values_to_grab<-list("anc.NonYRI.2way","anc.YRI.2way")
-for (cv in child_values_to_grab){
-  P1<-paste0("P1.",cv)
-  P2<-paste0("P2.",cv)
-  df_2way<-randomize_order_filter(df_2way,P1,P2,n=rep)
-}
+###############
+####Means and Deltas
+###############
+
+#########Extract Delta and Mean Values
+P1_cols <- colnames(df_filter)[grep("^P1", colnames(df_filter))]
+P2_cols <- colnames(df_filter)[grep("^P2", colnames(df_filter))]
+
+#Get the Delta between P1 and P2
+df_filter[paste0("Delta.", sub("^P1.", "", P1_cols))] <-
+  abs(df_filter[P1_cols] - df_filter[P2_cols])
+
+#Summarize and pull mean values
+means_df_filter <- df_filter %>%
+  group_by(coh)%>%
+  summarise(
+    across(
+      starts_with("Delta."),
+      list(
+        mean = ~ mean(.x, na.rm = TRUE),
+        var  = ~ var(.x, na.rm = TRUE)
+      )
+    )
+  )%>%
+  pivot_longer(
+    cols = -coh,
+    names_to = c("type", "stat"),
+    names_sep = "_(?=[^_]+$)",
+    values_to = "value"
+  )
 
 #Export File
-write.csv(df_2way, file = "2way_analysis.csv", row.names = FALSE,quote=FALSE)
+write.csv(means_df_filter, file = "empirical_means.csv", row.names = FALSE,quote=FALSE)
 
-col_pairs <- list(
-  c("P1.anc.YRI.2way", "P2.anc.YRI.2way",corsym,"corsym"),
-  c("P1.anc.YRI.2way.rand", "P2.anc.YRI.2way.rand",corsym,"corsym"),
-  c("P1.anc.YRI.2way", "P2.anc.YRI.2way",pearson,"pearson"),
-  c("P1.anc.YRI.2way.rand", "P2.anc.YRI.2way.rand",pearson,"pearson")  
+####################
+###Extract Correlations
+####################
+child_value_to_randomize<-"anc.YRI.2way"
+
+#Go through 100 repetitions of randomizing order
+for (rep in 1:100){
+  P1<-paste0("P1.",cv)
+  P2<-paste0("P2.",cv)
+  df_filter<-randomize_order_filter(df_filter,P1,P2,n=rep)
+}
+
+#Create list of lists that has all values to pull for correlations
+value_type <- c("anc.YRI", "anc.IBS", "anc.NAM","anc.YRI.2way",
+               "adm.YRI", "adm.IBS", "adm.NAM")
+functions <- list(corsym, pearson)
+function_info <- data.frame(
+  fun_name = c("corsym", "pearson"),
+  stringsAsFactors = FALSE
+)
+function_info$fun <- functions
+
+#Pull possible combinations of lists togther
+combinations <- expand.grid(
+  suffix = value_type,
+  fun = seq_len(nrow(function_info)),
+  stringsAsFactors = FALSE
 )
 
-df_2way_corr <- do.call(rbind,
-                  lapply(split(df_2way, df_2way$coh), function(dat) {
+#Apply the combinations into a new list called col_pairs
+col_pairs <- lapply(seq_len(nrow(combinations)), function(i) {
+  f <- function_info[combinations$fun[i], ]
+  list(
+    paste0("P1.", combinations$suffix[i]),
+    paste0("P2.", combinations$suffix[i]),
+    f$fun[[1]],
+    f$fun_name
+  )
+})
+
+#Add randomized columns as well
+for (i in 1:100) {
+  add_cor <- c(
+    paste0(c("P1.anc.YRI.2way.rand", "P2.anc.YRI.2way.rand"), ".", i),
+    c(corsym, "corsym")
+  )
+  col_pairs[[length(col_pairs) + 1]] <- add_cor
+  add_pear <- c(
+    paste0(c("P1.anc.YRI.2way.rand", "P2.anc.YRI.2way.rand"), ".", i),
+    c(pearson, "pearson")
+  )
+  col_pairs[[length(col_pairs) + 1]] <- add_pear
+}
+
+#Calculate all correlations
+df_filter_corr <- do.call(rbind,
+                  lapply(split(df_filter, df_filter$coh), function(dat) {
                     
                     do.call(rbind,
                             lapply(col_pairs, function(p)
@@ -130,13 +198,15 @@ df_2way_corr <- do.call(rbind,
                   })
 )      
 
-#Export File
-write.csv(df_2way_corr, file = "2way_correlations.csv", row.names = FALSE,quote=FALSE)
+#Export Files
+write.csv(df_filter, file = "empirical_data.csv", row.names = FALSE,quote=FALSE)
+write.csv(df_filter_corr, file = "empirical_correlations.csv", row.names = FALSE,quote=FALSE)
+
 
 ####################
 ###Admixture Plot Dataset
 ####################
-adm_Q3 <- read.csv("C:/Users/Ictinike/Documents/Labs/GoldbergLab/Papers/admixture_analysis/TRIOS_HGDP_all_chrs_bfile_ldpruned.3.Q",sep=" ",header=FALSE)
+q <- read.csv("C:/Users/Ictinike/Documents/Labs/GoldbergLab/Papers/admixture_analysis/TRIOS_HGDP_all_chrs_bfile_ldpruned.3.Q",sep=" ",header=FALSE)
 fam<-read.csv("C:/Users/Ictinike/Documents/Labs/GoldbergLab/Papers/admixture_analysis/TRIOS_HGDP_all_chrs_bfile_ldpruned.fam",sep="",header=FALSE)
 
 pop_assign<-fam%>%
@@ -205,8 +275,3 @@ q_long <- q %>%
 #Export File
 write.csv(q_long, file = "ADMIXTURE_Plot_data.csv", row.names = FALSE,quote=FALSE)
 
-
-
-####################
-###Three Way Dataset
-####################
