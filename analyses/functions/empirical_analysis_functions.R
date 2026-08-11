@@ -7,13 +7,13 @@ run_pair <- function(dat, col1, col2, fun, name) {
   
   cbind(
     data.frame(
-      group = dat$coh[1],
-      name_of_1 = col1,
-      name_of_2 = col2,
+      Population = dat$coh[1],
+      name_of_P1 = col1,
+      name_of_P2 = col2,
       R = vals[1],
       CIL = vals[2],
       CIU = vals[3],      
-      n = nrow(dat),
+      N = nrow(dat),
       R_type = paste0(name),
       row.names = NULL
     )
