@@ -41,7 +41,7 @@ df_corr <- df_corr %>%
 
 ```{r supplemental_figure_cv_K_test, echo=FALSE}
 
-cv_results <- read.csv("C:/Users/Ictinike/Documents/Labs/GoldbergLab/Papers/admixture_analysis/Cross-validation-curve_TRIOS_HGDP_all_chrs_merged_bfile.txt",sep="\t",header=TRUE)
+cv_results <- read.csv("Cross-validation-curve_TRIOS_HGDP_all_chrs_merged_bfile.txt",sep="\t",header=TRUE)
 
 best <- cv_results[which.min(cv_results$cv_error), ]
 p1<-ggplot(cv_results, aes(k, cv_error)) +
