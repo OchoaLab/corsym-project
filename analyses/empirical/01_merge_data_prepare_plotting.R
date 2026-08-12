@@ -108,13 +108,16 @@ P2_cols <- colnames(df_filter)[grep("^P2", colnames(df_filter))]
 #Get the Delta between P1 and P2
 df_filter[paste0("Delta.", sub("^P1.", "", P1_cols))] <-
   abs(df_filter[P1_cols] - df_filter[P2_cols])
+#Get the Mean between P1 and P2
+df_filter[paste0("Mean.", sub("^P1.", "", P1_cols))] <-
+  abs(df_filter[P1_cols] + df_filter[P2_cols])/2
 
 #Summarize and pull mean values
 means_df_filter <- df_filter %>%
   group_by(coh)%>%
   summarise(
     across(
-      starts_with("Delta."),
+      matches("^(Delta.|Mean.)"),
       list(
         mean = ~ mean(.x, na.rm = TRUE),
         var  = ~ var(.x, na.rm = TRUE)
