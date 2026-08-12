@@ -103,20 +103,21 @@ p_fig2_boxplot<-df_corr %>%
   ggplot(., aes(x = Population, y = R,colour = type_group)) +
   geom_boxplot(size=2)+
   geom_hline(yintercept = 0,linetype='dashed',linewidth=3,color="black")+
-  labs(y="Computed r (YRI-Like)")+
+  labs(y="Estimated r (YRI-Like)")+
   geom_errorbar(
     data = subset(t, type_group %in% c("Pearson - Original Data", "CorSym")),
     aes(ymin = CIL, ymax = CIU), alpha=.8,size=1.3, 
-    position = position_dodge(width = 1),   width = 1
+    position = position_dodge(width = 1),   width = .2
   ) +
   geom_hline(yintercept = 0,linetype='dashed',linewidth=3,color="black")+
-  labs(y="Computed r (YRI-Like)")+
+  labs(y="Estimated r (YRI-Like)")+
   scale_x_discrete(
     labels = setNames(x_labels$label, x_labels$Population)
   )+
   scale_color_manual(name="Estimation", values=c("#4E79A7","#F28E2B","#59A14F"))+
   theme_professional(base_size = 30)+
   theme(legend.position = "bottom",panel.border=element_rect(linewidth = 3))
+
 
 #Organize and save
 p4<-(p1|p2|p3)+
