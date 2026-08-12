@@ -101,7 +101,7 @@ p1d<-plot1d_data%>%
   labs(
     y="Pearson's r",x="True Correlation")+
   scale_color_discrete(
-    name="Ordering \nProportion",labels = scales::percent(as.numeric(levels(factor(plot_1d_data$Bias))))
+    name="Ordering \nProportion",labels = scales::percent(as.numeric(levels(factor(plot1d_data$Bias))))
   )+
   theme_professional(base_size = 30)+
   theme(axis.text = element_text(size=22),panel.border = element_rect(linewidth = 3))
