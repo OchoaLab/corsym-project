@@ -205,3 +205,24 @@ nonnormal_plotting<-function(rhos,n,type){
   return(plot)
 }
 
+error_bars <- function(value, variance, direction = "y", width = 0) {
+  
+  if (direction == "y") {
+    geom_errorbar(
+      aes(
+        ymin = {{ value }} - {{ variance }},
+        ymax = {{ value }} + {{ variance }}
+      ),
+      width = width
+    )
+    
+  } else if (direction == "x") {
+    geom_errorbarh(
+      aes(
+        xmin = {{ value }} - {{ variance }},
+        xmax = {{ value }} + {{ variance }}
+      ),
+      height = width
+    )
+  }
+}
