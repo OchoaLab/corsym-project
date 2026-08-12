@@ -1,1 +1,283 @@
+---
+title: "Corsym_Supplements"
+author: "GK"
+date: "2026-08-12"
+output: html_document
+---
 
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+source( "empirical_analysis_functions.R" )
+source( 'plotting_functions.R' )
+
+# load libraries
+library(tidyr)
+library(dplyr)
+library(corsym)
+library(ggplot2)
+library(RColorBrewer)
+library(patchwork)
+library(ggh4x)
+
+#Read all data
+df_all<-read.csv("empirical_data.csv")
+df_corr<-read.csv("empirical_correlations.csv")
+df_means<-read.csv("empirical_means.csv")
+
+```
+
+```{r add_to_correlations}
+df_corr <- df_corr %>%
+  mutate(Rand_type = if_else(grepl("rand", 
+                              name_of_P1), "Random", "Raw"),
+         Type = if_else(grepl("adm", 
+                              name_of_P1), "ADMIXTURE", 
+                        ifelse(grepl("anc",name_of_P1),"ANCESTOR","RFMIX")),
+         Ref_Num = if_else(grepl("2way", 
+                                 name_of_P1), "2way", "3way")
+  )
+```
+
+```{r supplemental_figure_cv_K_test, echo=FALSE}
+
+cv_results <- read.csv("C:/Users/Ictinike/Documents/Labs/GoldbergLab/Papers/admixture_analysis/Cross-validation-curve_TRIOS_HGDP_all_chrs_merged_bfile.txt",sep="\t",header=TRUE)
+
+best <- cv_results[which.min(cv_results$cv_error), ]
+p1<-ggplot(cv_results, aes(k, cv_error)) +
+  geom_line(linewidth = 1) +
+  geom_point(size = 2) +
+  geom_vline(xintercept = best$k,
+             linetype = "dashed",
+             color = "red") +
+  geom_point(data = best,
+             color = "red",
+             size = 3) +
+  labs(x="K",y="CV Error")+
+    theme_professional()+
+  plot_annotation(tag_levels = "A")& 
+  theme(legend.position = "bottom",panel.border=element_rect(linewidth=2),
+                                plot.tag = element_text(face = 'bold'))
+
+ggsave("Supplemental_Figure_Cross_Validation.pdf",p1,
+       dpi=600,width=5,height=5,units="in")
+
+```
+
+####################
+##Supplemental Figure, Two vs Three way Confirmation
+####################
+
+```{r two_three_way_comparison}
+temp<-df_all%>%
+  mutate(Mean_YRI.2way=(P1.anc.YRI.2way+P2.anc.YRI.2way)/2,
+         Mean_YRI.3way=(P1.anc.YRI+P2.anc.YRI)/2,
+         Mean_NonYRI=(P1.anc.NonYRI.2way+P2.anc.NonYRI.2way)/2,
+         Mean_NAM=(P1.anc.NAM+P2.anc.NAM)/2,
+         Mean_IBS=(P1.anc.IBS+P2.anc.IBS)/2
+         )
+
+p1<-quick_point_base(temp,Mean_YRI.2way,Mean_YRI.3way,col=coh,point_size = 5)+
+    labs(y="3-Way Mean Inferred Ancestry\n(YRI-Like)",col="Population",x="2-Way Mean Inferred Ancestry\n(YRI-Like)")
+p2<-quick_point_base(temp,Mean_NonYRI,Mean_IBS,col=coh,point_size = 5)+
+    labs(y="3-Way Mean Inferred Ancestry\n(IBS-Like)",col="Population",x="2-Way Mean Inferred Ancestry\n(NonYRI-Like)")
+p3<-quick_point_base(temp,Mean_NonYRI,Mean_NAM,col=coh,point_size = 5)+
+    labs(y="3-Way Mean Inferred Ancestry\n(NAM-Like)",col="Population",x="2-Way Mean Inferred Ancestry\n(NonYRI-Like)")
+
+p4<-(p1|p2|p3)+
+  plot_annotation(tag_levels = "A")+
+  plot_layout(guides = "collect",ncol = 3,nrow = 1)& theme(legend.position = "bottom",legend.text = element_text(size=30),
+                                legend.title = element_text(size=40),panel.border=element_rect(linewidth=3),
+                                plot.tag = element_text(face = 'bold',size=45))
+
+ggsave("SupplementalFigure_Compare_2way_3way.pdf",p4,
+       dpi=600,width=45,height=15,units="in")
+
+```
+
+##############
+##Supplemental Figure
+##############
+```{r ANCESTOR_and_True}
+temp<-df_all%>%
+  mutate(Mean_YRI.anc=(P1.anc.YRI+P2.anc.YRI)/2,
+         Mean_NAM.anc=(P1.anc.NAM+P2.anc.NAM)/2,
+         Mean_IBS.anc=(P1.anc.IBS+P2.anc.IBS)/2,
+         Mean_YRI.rfm=(P1.rfm.YRI+P2.rfm.YRI)/2,
+         Mean_NAM.rfm=(P1.rfm.NAM+P2.rfm.NAM)/2,
+         Mean_IBS.rfm=(P1.rfm.IBS+P2.rfm.IBS)/2,
+         Mean_YRI.adm=(P1.adm.YRI+P2.adm.YRI)/2,
+         Mean_NAM.adm=(P1.adm.NAM+P2.adm.NAM)/2,
+         Mean_IBS.adm=(P1.adm.IBS+P2.adm.IBS)/2
+         )
+add_comp_layers <- function(p) {
+  p +
+    theme_professional(base_size = 30)+
+  scale_color_discrete(name="Population")+
+  geom_abline(slope=1,size=2,linetype="dashed")+
+  theme(legend.position = "none",panel.border=element_rect(linewidth = 3))+
+  xlim(0, 1)+
+  ylim(0, 1) 
+}
+
+p_rf_YRI<-quick_point_base(temp,rfm.YRI,adm.YRI,color = coh,point_size = 5)+
+  labs(x="RFmix (Child, YRI-Like)",y="ADMIXTURE\n(Child, YRI-Like)",col="Population")
+p_rf_IBS<-quick_point_base(temp,rfm.IBS,adm.IBS,color = coh,point_size = 5)+
+  labs(x="RFmix (Child, IBS-Like)",y="ADMIXTURE\n(Child, IBS-Like)",col="Population")
+p_rf_NAM<-quick_point_base(temp,rfm.NAM,adm.NAM,color = coh,point_size = 5)+
+  labs(x="RFmix (Child, NAM-Like)",y="ADMIXTURE\n(Child, NAM-Like)",col="Population")
+
+p_adm_IBS<-ggplot(temp, aes(x = Mean_IBS.anc, y = Mean_IBS.adm, color = coh)) +
+  geom_point(size = 7) +
+  labs(x="Mean Parent Ancestry\n(Inferred Parents, IBS-Like)",y="Child Ancestry\n(True Ancestry, IBS-Like)")
+p_adm_IBS<-add_comp_layers(p_adm_IBS)
+p_adm_NAM<-ggplot(temp, aes(x = Mean_NAM.anc, y = Mean_NAM.adm, color = coh)) +
+  geom_point(size = 7) +
+  labs(x="Mean Parent Ancestry\n(Inferred Parents, NAM-Like)",y="Child Ancestry\n(True Ancestry, NAM-Like)")
+p_adm_NAM<-add_comp_layers(p_adm_NAM)
+p_adm_YRI<-ggplot(temp, aes(x = Mean_YRI.anc, y = Mean_YRI.adm, color = coh)) +
+  geom_point(size = 7) +
+  labs(x="Mean Parent Ancestry\n(Inferred Parents, YRI-Like)",y="Child Ancestry\n(True Ancestry, YRI-Like)")
+p_adm_YRI<-add_comp_layers(p_adm_YRI)
+
+p_child_IBS<-ggplot(temp, aes(x = Mean_IBS.adm, y = adm.IBS, color = coh)) +
+  geom_point(size = 7) +
+  labs(x="Mean Parent Ancestry\n(True Parents, IBS-Like)",y="Child Ancestry\n(True Ancestry, IBS-Like)")
+p_child_IBS<-add_comp_layers(p_child_IBS)
+
+p_child_NAM<-ggplot(temp, aes(x = Mean_NAM.adm, y = adm.NAM, color = coh)) +
+  geom_point(size = 7) +
+  labs(x="Mean Parent Ancestry\n(True Parents, NAM-Like)",y="Child Ancestry\n(True Ancestry, NAM-Like)")
+p_child_NAM<-add_comp_layers(p_child_NAM)
+
+p_child_YRI<-ggplot(temp, aes(x = Mean_YRI.adm, y = adm.YRI, color = coh)) +
+  geom_point(size = 7) +
+  labs(x="Mean Parent Ancestry\n(True Parents, YRI-Like)",y="Child Ancestry\n(True Ancestry, YRI-Like)")
+p_child_YRI<-add_comp_layers(p_child_YRI)
+
+
+p7<-(p_rf_YRI|p_child_YRI|p_adm_YRI|p_rf_IBS|p_child_IBS|
+       p_adm_IBS|p_rf_NAM|p_child_NAM|p_adm_NAM)+
+  plot_annotation(tag_levels = "A")+
+  plot_layout(guides = "collect",ncol = 3,nrow = 3) & theme(legend.position = "bottom",legend.text = element_text(size=30),
+                                legend.title = element_text(size=30),panel.border=element_rect(linewidth=3),
+                                plot.tag = element_text(face = 'bold',size=35))
+
+#p4
+ggsave("Supplemental_Figure_Child-Parent_Compare.pdf",p7,
+      dpi=600,width=29.5,height=29,units="in")
+```
+
+##############
+##Supplemental Figure Comparison Mean Difference Real and Inferred
+##############
+
+```{r ANCESTOR_and_True}
+p1<-quick_point_base(df_all,P1.anc.IBS,P2.anc.IBS,color = coh,point_size = 5)+
+  labs(y="Inferred P2 (IBS-Like)",col="Population",x="Inferred P1 (IBS-Like)")+
+  theme(legend.position = "none")
+p2<-quick_point_base(df_all,P1.anc.NAM,P1.anc.NAM,color = coh,point_size = 5)+
+  labs(y="Inferred P2 (NAM-Like)",col="Population",x="Inferred P1 (NAM-Like)")+
+    theme(legend.position = "none")
+p3<-quick_point_base(df_all,`P1.anc.YRI`,`P1.anc.YRI`,color = coh,point_size = 5)+
+  labs(y="Inferred P2 (YRI-Like)",col="Population",x="Inferred P1 (YRI-Like)")+
+    theme(legend.position = "none")
+
+temp<-df_means%>%
+  pivot_wider(names_from = c(type,stat),values_from = value)
+
+p4<-quick_point_base(temp,Delta.adm.IBS_mean,Delta.anc.IBS_mean,color = coh,point_size = 5)+
+  error_bars(Delta.adm.IBS_mean,Delta.adm.IBS_var,direction = "x")+
+  error_bars(Delta.anc.IBS_mean,Delta.anc.IBS_var,direction = "y")+
+  labs(x="Mean Difference\n(True Parents, IBS-Like)",y="Mean Difference\n(Inferred Parents, IBS-Like)",color="Population")+
+  theme(legend.position = "none")+
+  scale_x_continuous(limits = c(0,.3))+scale_y_continuous(limits=c(0,.3))+
+  guides(color="none")
+p5<-quick_point_base(temp,Delta.adm.NAM_mean,Delta.anc.NAM_mean,color = coh,point_size = 5)+
+  error_bars(Delta.adm.IBS_mean,Delta.adm.NAM_var,direction = "x")+
+  error_bars(Delta.anc.IBS_mean,Delta.anc.NAM_var,direction = "y")+
+  labs(x="Mean Difference\n(True Parents, NAM-Like)",y="Mean Difference\n(Inferred Parents, NAM-Like)",color="Population")+
+  theme(legend.position = "none")+
+  scale_x_continuous(limits = c(0,.3))+scale_y_continuous(limits=c(0,.3))+
+  guides(color="none")
+p6<-quick_point_base(temp,Delta.adm.YRI_mean,Delta.anc.YRI_mean,color = coh,point_size = 5)+
+  error_bars(Delta.adm.YRI_mean,Delta.adm.YRI_var,direction = "x")+
+  error_bars(Delta.anc.YRI_mean,Delta.anc.YRI_var,direction = "y")+
+  labs(x="Mean Difference\n(True Parents, YRI-Like)",y="Mean Difference\n(Inferred Parents, YRI-Like)",color="Population")+
+  theme(legend.position = "none")+
+  scale_x_continuous(limits = c(0,.3))+
+  scale_y_continuous(limits=c(0,.3))+
+  guides(color="none")
+
+p7<-(p3|p6|p1|p4|p2|p5)+
+  plot_annotation(tag_levels = "A")+
+  plot_layout(guides = "collect",ncol = 2,nrow = 3) & theme(legend.position = "bottom",legend.text = element_text(size=30),
+                                legend.title = element_text(size=30),
+                                panel.border=element_rect(linewidth=3),
+                                plot.tag = element_text(face = 'bold',size=35))
+
+ggsave("Supplemental_Average_Comparison.pdf",p7,
+       dpi=600,width=20,height=25,units="in")
+```
+
+##############
+##Supplemental Figure, Population Estimated R Comparison
+##############
+
+```{r ancestor_admixture_comparison}
+
+##Accounting for population ACB NAM ancestry (they have none, so pearson doesn't compose correctly)
+df_corr[is.na(df_corr)] <- 0
+
+add_comp_layers <- function(p) {
+  p +
+  scale_color_manual(name="Estimation", values=c("#4E79A7","#F28E2B","#59A14F","orchid2"))+
+  geom_hline(yintercept = 0,linetype='dashed',linewidth=3,color="black")+
+  theme_professional(base_size = 30)+
+  theme(legend.position = "bottom",panel.border = element_rect(linewidth=3))+
+  geom_errorbar(aes(ymin=CIL,ymax=CIU),
+                alpha=.8,size=1.3,width=.2,
+                position=position_dodge(width = .75))
+}
+
+temp<-df_corr %>%
+  mutate(type_group=case_when(
+    Type=="ANCESTOR"&R_type=="corsym"~"Inferred - CorSym",
+    Type=="ANCESTOR"&R_type=="pearson"~"Inferred - Pearson",
+    Type=="ADMIXTURE"&R_type=="corsym"~"Real Parent - CorSym",
+    Type=="ADMIXTURE"&R_type=="pearson"~"Real Parent - Pearson",
+    TRUE ~ "NA")
+  )%>%
+  filter(Rand_type!="Random",Ref_Num=="3way")
+
+plot_a<-temp%>%
+  filter(grepl("YRI",name_of_P1))%>%
+  ggplot(., aes(x = Population, y = R,color=type_group)) +
+  geom_boxplot(size=3)+
+  labs(y="Estimated r\n(YRI-Like)")
+plot_a<-add_comp_layers(plot_a) 
+
+plot_b<-temp%>%
+  filter(grepl("IBS",name_of_P1))%>%
+  ggplot(., aes(x = Population, y = R,color=type_group)) +
+  geom_boxplot(size=3)+
+  labs(y="Estimated r\n(IBS-Like)")
+plot_b<-add_comp_layers(plot_b) 
+
+plot_c<-temp%>%
+  filter(grepl("NAM",name_of_P1))%>%
+  ggplot(., aes(x = Population, y = R,color=type_group)) +
+  geom_boxplot(size=3)+
+  labs(y="Estimated r\n(NAM-Like)")
+plot_c<-add_comp_layers(plot_c) 
+
+p_Suppl_Comp<-(plot_a|plot_b|plot_c)+
+  plot_annotation(tag_levels = "A")+
+  plot_layout(guides = "collect",ncol = 1,nrow = 3) & theme(legend.position = "bottom",legend.text = element_text(size=30),
+                                legend.title = element_text(size=30),panel.border=element_rect(linewidth=3),
+                                plot.tag = element_text(face = 'bold',size=35))
+
+ggsave("Supplemental_Figure_Comparison.pdf",p_Suppl_Comp,
+       dpi=600,width=29.5,height=15,units="in")
+
+```
