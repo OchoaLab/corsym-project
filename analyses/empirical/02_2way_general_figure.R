@@ -12,6 +12,8 @@ library(ggplot2)
 library(RColorBrewer)
 library(ggh4x)
 
+setwd("C:/Users/Ictinike/Documents/Labs/GoldbergLab/Papers/Corsym_Project_Code")
+
 ############################
 #########Plot Figure 2
 ############################
@@ -90,6 +92,22 @@ x_labels <- df_corr %>%
     
   )
 
+
+temp<-df_corr %>%
+  filter(
+    !(R_type == "corsym" & Type=="Random"),Ref_Num=="2way"
+  )%>%
+  filter(
+    !((R_type == "pearson" & Type=="Random")
+      & !(name_of_P1=="P1.anc.YRI.2way.rand.1"))
+  )%>%
+  mutate(type_group=case_when(
+    R_type=="corsym"~"CorSym",
+    Type=="Random"&R_type=="pearson"~"Pearson - Data Randomized",
+    Type=="Raw"&R_type=="pearson"~"Pearson - Original Data",
+    TRUE ~ "NA")
+  )
+
 p_fig2_boxplot<-df_corr %>%
   filter(
     !(R_type == "corsym" & Type=="Random"),Ref_Num=="2way"
@@ -105,9 +123,9 @@ p_fig2_boxplot<-df_corr %>%
   geom_hline(yintercept = 0,linetype='dashed',linewidth=3,color="black")+
   labs(y="Estimated r (YRI-Like)")+
   geom_errorbar(
-    data = subset(t, type_group %in% c("Pearson - Original Data", "CorSym")),
+    data = temp,
     aes(ymin = CIL, ymax = CIU), alpha=.8,size=1.3, 
-    position = position_dodge(width = 1),   width = .2
+    position = position_dodge(width = .75),   width = .2
   ) +
   geom_hline(yintercept = 0,linetype='dashed',linewidth=3,color="black")+
   labs(y="Estimated r (YRI-Like)")+
@@ -117,7 +135,7 @@ p_fig2_boxplot<-df_corr %>%
   scale_color_manual(name="Estimation", values=c("#4E79A7","#F28E2B","#59A14F"))+
   theme_professional(base_size = 30)+
   theme(legend.position = "bottom",panel.border=element_rect(linewidth = 3))
-
+p_fig2_boxplot
 
 #Organize and save
 p4<-(p1|p2|p3)+
@@ -138,3 +156,4 @@ p_fig2<-p_admixture /
 
 ggsave("Figure2.pdf",p_fig2,
        dpi=600,width=29.5,height=29,units="in")
+
