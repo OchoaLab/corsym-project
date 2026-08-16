@@ -18,27 +18,33 @@ df_corr<-read.csv("empirical_correlations.csv")
 df_means<-read.csv("empirical_means.csv")
 df_admix<-read.csv("ADMIXTURE_Plot_data.csv")
 
+
 ibs<-df_all %>%
   group_by(coh) %>%
   dplyr::summarise(
     x = sum(P1.adm.IBS > P2.adm.IBS),
     n = n()
-    )
-order_bias_test(ibs)
-
+  )%>%
+  bind_rows(summarise(., across(where(is.numeric), sum),
+                      across(where(is.character), ~'Total')))
 nam<-df_all %>%
   group_by(coh) %>%
   dplyr::summarise(
     x = sum(P1.adm.NAM > P2.adm.NAM),
     n = n()
-    )
-order_bias_test(nam)
-
+  )%>%
+  bind_rows(summarise(., across(where(is.numeric), sum),
+                      across(where(is.character), ~'Total')))
 yri<-df_all %>%
   group_by(coh) %>%
   dplyr::summarise(
-    x = sum(P1.adm.yri > P2.adm.yri),
+    x = sum(P1.adm.YRI > P2.adm.YRI),
     n = n()
-    )
+  )%>%
+  bind_rows(summarise(., across(where(is.numeric), sum),
+                      across(where(is.character), ~'Total')))
+
 order_bias_test(yri)
+order_bias_test(nam)
+order_bias_test(ibs)
 
