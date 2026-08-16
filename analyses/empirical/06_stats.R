@@ -12,6 +12,33 @@ library(ggplot2)
 library(RColorBrewer)
 library(ggh4x)
 
-############################
-#########Plot Figure 4
-############################
+#Read all data
+df_all<-read.csv("empirical_data.csv")
+df_corr<-read.csv("empirical_correlations.csv")
+df_means<-read.csv("empirical_means.csv")
+df_admix<-read.csv("ADMIXTURE_Plot_data.csv")
+
+ibs<-df_all %>%
+  group_by(coh) %>%
+  dplyr::summarise(
+    x = sum(P1.adm.IBS > P2.adm.IBS),
+    n = n()
+    )
+order_bias_test(ibs)
+
+nam<-df_all %>%
+  group_by(coh) %>%
+  dplyr::summarise(
+    x = sum(P1.adm.NAM > P2.adm.NAM),
+    n = n()
+    )
+order_bias_test(nam)
+
+yri<-df_all %>%
+  group_by(coh) %>%
+  dplyr::summarise(
+    x = sum(P1.adm.yri > P2.adm.yri),
+    n = n()
+    )
+order_bias_test(yri)
+
