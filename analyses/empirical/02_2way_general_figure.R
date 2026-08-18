@@ -12,8 +12,6 @@ library(ggplot2)
 library(RColorBrewer)
 library(ggh4x)
 
-setwd("C:/Users/Ictinike/Documents/Labs/GoldbergLab/Papers/Corsym_Project_Code")
-
 ############################
 #########Plot Figure 2
 ############################
