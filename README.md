@@ -1,4 +1,4 @@
-## Overview
+## Estimating the correlation of exchangeable variables in assortative mating
 
 ## Overview
 1. Corsym as an r function 
