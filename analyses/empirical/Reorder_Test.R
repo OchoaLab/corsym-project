@@ -17,9 +17,9 @@ remove_D_columns <- function(df) {
 #########ADMIXTURE
 #Load ADMIXTURE output, combine with parent and fam file info. This is a limited fam file, used only to get the precise IDs per individual. Parent Info is the true Fam information
 #'D#' columns are marked for deletion
-adm_Q3 <- read.csv("C:/Users/Ictinike/Documents/Labs/GoldbergLab/Papers/admixture_analysis/TRIOS_HGDP_all_chrs_bfile_ldpruned.3.Q",sep=" ",header=FALSE)
-fam<-read.csv("C:/Users/Ictinike/Documents/Labs/GoldbergLab/Papers/admixture_analysis/TRIOS_HGDP_all_chrs_bfile_ldpruned.fam",sep="",header=FALSE)
-parent_info<-read.csv("C:/Users/Ictinike/Documents/Labs/GoldbergLab/Papers/admixture_analysis/HGDP_with_TGP_trios_merged_ldpruned.fam",sep=" ",header=FALSE)
+adm_Q3 <- read.csv("TRIOS_HGDP_all_chrs_bfile_ldpruned.3.Q",sep=" ",header=FALSE)
+fam<-read.csv("TRIOS_HGDP_all_chrs_bfile_ldpruned.fam",sep="",header=FALSE)
+parent_info<-read.csv("HGDP_with_TGP_trios_merged_ldpruned.fam",sep=" ",header=FALSE)
 colnames(parent_info)<-c("coh","id","p1","p2","sex","D1")
 parent_info<-remove_D_columns(parent_info)
 adm<-cbind(fam,adm_Q3)
@@ -34,7 +34,7 @@ adm<-merge(adm,parent_info,by=c("coh","id"),all.x = TRUE)
 
 #########RFMIX
 #Load RFMIX output
-rfm<-read.csv("C:/Users/Ictinike/Documents/Labs/GoldbergLab/Papers/hgdp/three_harmonized_rfmix.csv",
+rfm<-read.csv("three_harmonized_rfmix.csv",
               sep=",",header=TRUE)
 rfm <- dcast(as.data.table(rfm),
   individual ~ ancestry,
@@ -48,8 +48,8 @@ rfm <- rfm %>%
 
 #########ANCESTOR
 #Load ANCESTOR output
-anc<-read.csv("C:/Users/Ictinike/Documents/Labs/GoldbergLab/Papers/hgdp/ancestor_3way_HGDP.txt",sep="",header=FALSE)
-anc<-read.csv("C:/Users/Ictinike/Downloads/ancestor_3way_reorder.txt",sep="",header=FALSE)
+anc<-read.csv("ancestor_3way_HGDP.txt",sep="",header=FALSE)
+anc<-read.csv("ancestor_3way_reorder.txt",sep="",header=FALSE)
 colnames(anc)<-c("T1","P1.anc.IBS","P1.anc.YRI","P1.anc.NAM","P2.anc.IBS","P2.anc.YRI","P2.anc.NAM")
 anc <- anc %>%
   mutate(basename = basename(T1)) %>%
@@ -59,7 +59,7 @@ anc <- anc %>%
            extra = "merge",    fill = "right"  )%>%
   dplyr::select(-c(T1,D2))
 
-anc.2way<-read.csv("C:/Users/Ictinike/Documents/Labs/GoldbergLab/Papers/hgdp/ancestor_2way_YRI_v_NonYRI.txt",sep="",header=FALSE)
+anc.2way<-read.csv("ancestor_2way_YRI_v_NonYRI.txt",sep="",header=FALSE)
 colnames(anc.2way)<-c("T1","P1.anc.NonYRI.2way","P1.anc.YRI.2way","D1","P2.anc.NonYRI.2way","P2.anc.YRI.2way","D2")
 anc.2way <- anc.2way %>%
   mutate(basename = basename(T1)) %>%
