@@ -179,7 +179,7 @@ nonnormal_plotting<-function(rhos,n,type){
     )
   
   #Plot data in a facetted grid across all rhos and sizes
-  plot<-sim_data%>%
+  plot<-nonnormal_plot_data%>%
     mutate(Rho=rho)%>%
     ggplot(.,aes(x=x,y=y))+
     geom_point()+
