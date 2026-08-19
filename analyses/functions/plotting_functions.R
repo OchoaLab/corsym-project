@@ -140,6 +140,11 @@ name_fun <- function(value) {
 paste0("Correlation = ", value)
 }
 
+#Function to help in naming conventions for plot 1B
+name_fun2 <- function(value) {
+paste0("Size = ", value)
+}
+
 #Function to plot nonnormal data
 nonnormal_plotting<-function(rhos,n,type){
   
