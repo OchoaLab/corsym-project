@@ -33,7 +33,7 @@ p1a<-plot1a_data%>%
     fill = "grey70",
     linewidth = 1,
     alpha = 0.25)  +
-  facet_grid(factor(type,levels = c("Random","Ordered"))~Rho,labeller = labeller(Rho = as_labeller(name_fun), type = label_value))+
+  facet_grid(factor(type,levels = c("Random","Extreme"))~Rho,labeller = labeller(Rho = as_labeller(name_fun), type = label_value))+
   labs(y="Vector 2",x="Vector 1") +
   theme(
     legend.position = "bottom",
@@ -60,7 +60,7 @@ p1b<-plot1b_data%>%
   )%>%
   ggplot(.) +
   geom_point(aes(x=Rho,y=value,col=Correlation),shape=15,size=3,alpha=.5)+
-  facet_grid(~Size,labeller = labeller(Size = as_labeller(name_fun)))+
+  facet_grid(~Size,labeller = labeller(Size = as_labeller(name_fun2)))+
   geom_abline(slope=1,intercept = 0,linetype="dashed",linewidth=4)+
   labs(y="Computed r",x="True Correlation")+
   scale_color_manual(
