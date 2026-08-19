@@ -38,7 +38,7 @@ p_fig3a<-df_all%>%
   filter(!is.na(value))%>%
   ggplot(.)+
   geom_boxplot(aes(y=`value`,fill=Parent,x=coh,col=after_scale(fill)),size=2,alpha=.5)+
-  labs(y="True Ancestry (YRI-Like)",x="Population")+
+  labs(y="True Ancestry\n(YRI-Like)",x="Population")+
   scale_fill_manual(name="Parent", values=c("#00FFCC","#FF9933"))+
   theme_professional(base_size = 30)+
   theme(legend.position = "bottom",panel.border=element_rect(linewidth = 3))+
