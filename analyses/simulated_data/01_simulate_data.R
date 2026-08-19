@@ -24,12 +24,12 @@ plot1a_data <- sim_data%>%
   bind_rows(
   cbind(sim_data %>% select(-c(x,y)),
         reorder_xy(sim_data))%>%
-    mutate(type = "Ordered")
+    mutate(type = "Extreme")
   ) %>%
   #Round for easy visuals and make Random vs Ordered a type for facetting
   mutate(rho=round(rho,digits = 3),
          type= factor(type,
-                     levels = c("Random", "Ordered")),
+                     levels = c("Random", "Extreme")),
          Plot_rename="True Rho"
   )
 
