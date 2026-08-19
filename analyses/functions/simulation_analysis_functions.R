@@ -81,14 +81,14 @@ simulate_non_normal_cordata <- function(rho,
 }
 
 #Small Function to ensure reorder works correctly
-reorder_xy <- function(df, prop){
+reorder_xy <- function(df, prop=1){
   df_reorder <- as.data.frame(partial_order(as.matrix(df[c("x","y")]),q=prop))
   colnames(df_reorder)<-c("x","y")
   return(df_reorder)
 }
 
 #Small Function to ensure reorder works correctly
-reorder_xy_rename <- function(df, prop){
+reorder_xy_rename <- function(df, prop=1){
   df_reorder <- as.data.frame(partial_order(as.matrix(df[c("x","y")]),q=prop))
   colnames(df_reorder)<-c(paste0("x.",prop),paste0("y.",prop))
   df<-cbind(df,df_reorder)
