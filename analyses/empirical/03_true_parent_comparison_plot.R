@@ -22,80 +22,73 @@ df_corr<-read.csv("empirical_correlations.csv")
 df_means<-read.csv("empirical_means.csv")
 df_admix<-read.csv("ADMIXTURE_Plot_data.csv")
 
-#Plotting Figure 3
-p_fig3a<-df_all%>%
-  select(c(P1.adm.YRI, P2.adm.YRI,coh))%>%
+#Plotting
+cols <- colorRampPalette(
+  brewer.pal(4, "Accent")
+)(length(unique(df_admix$Cluster)))
+
+type_order <- c(
+  "Reference",
+  "Admixed Population"
+)
+df_admix <- df_admix %>%
+  mutate(
+    Type = factor(Type, levels = type_order)
+  )
+
+#Plot Fig2a, admixture plot 
+p_admixture<-ggplot(df_admix,aes(x = Individual,y = Ancestry,fill = Cluster)) +
+  geom_col(width = 1) +
+  scale_x_continuous(expand = c(0, 0))+
+  theme_professional(base_size=30)+
+  facet_nested(
+    ~ Type+factor(Population,levels= c(
+      "YRI","IBS","NAM",
+      "ACB","ASW",
+      "CLM","MXL","PEL","PUR"
+    )),
+    scales = "free_x",
+    space = "free_x"
+  )+
+  theme(legend.position = "none",axis.ticks.x = element_blank(),axis.text.x = element_blank(),
+        panel.spacing = unit(0, "lines"),strip.text = element_text(size=25),axis.title = element_text(size=25))
+p_admixture
+
+temp<-df_all%>%
+  select(c('coh','id','P1.adm.IBS', 'P2.adm.IBS','P1.adm.YRI',
+           'P2.adm.YRI','P1.adm.NAM','P2.adm.NAM'))%>%
   pivot_longer(
-    cols = c(P1.adm.YRI, P2.adm.YRI),
-    names_to = "Parent",
-    values_to = "value"
-  )%>%
+    cols = -c("id","coh"),
+    names_to = c("name"),
+    #names_pattern = "(P[12])(.*)"
+  )
+temp$ref <- substr(temp$name, nchar(temp$name) - 3 + 1, nchar(temp$name))
+temp$P_name <- substr(temp$name, 0, 2)
+
+p_fig2b<-temp%>%
   mutate(Parent=case_when(
-    Parent=="P1.adm.YRI"~"Father",
-    Parent=="P2.adm.YRI"~"Mother",
+    P_name=="P1"~"Father",
+    P_name=="P2"~"Mother",
     TRUE ~ "NA")
   )%>%
-  filter(!is.na(value))%>%
   ggplot(.)+
   geom_boxplot(aes(y=`value`,fill=Parent,x=coh,col=after_scale(fill)),size=2,alpha=.5)+
-  labs(y="True Ancestry\n(YRI-Like)",x="Population")+
+  labs(y="True Ancestry",x="Population")+
   scale_fill_manual(name="Parent", values=c("#00FFCC","#FF9933"))+
   theme_professional(base_size = 30)+
-  theme(legend.position = "bottom",panel.border=element_rect(linewidth = 3))+
-  plot_annotation(tag_levels = "A") & theme(legend.position = "bottom",legend.text = element_text(size=30),
-                                            legend.title = element_text(size=30),panel.border=element_rect(linewidth=3),
-                                            plot.tag = element_text(face = 'bold',size=35))
+  theme(legend.position = "bottom",panel.border=element_rect(linewidth = 3),
+        panel.spacing = unit(0.3, "lines"))+
+  facet_grid(factor(ref,levels = c("YRI","IBS","NAM"))~.,switch = "y")+
+  theme(legend.position = "bottom")
 
-
-p_fig3b<-df_all%>%
-  select(c(P1.adm.IBS, P2.adm.IBS,coh))%>%
-  pivot_longer(
-    cols = c(P1.adm.IBS, P2.adm.IBS),
-    names_to = "Parent",
-    values_to = "value"
-  )%>%
-  mutate(Parent=case_when(
-    Parent=="P1.adm.IBS"~"Father",
-    Parent=="P2.adm.IBS"~"Mother",
-    TRUE ~ "NA")
-  )%>%
-  filter(!is.na(value))%>%
-  ggplot(.)+
-  geom_boxplot(aes(y=`value`,fill=Parent,x=coh,col=after_scale(fill)),size=2,alpha=.5)+
-  labs(y="True Ancestry\n(IBS-Like)",x="Population")+
-  scale_fill_manual(name="Parent", values=c("#00FFCC","#FF9933"))+
-  theme_professional(base_size = 30)+
-  theme(legend.position = "bottom",panel.border=element_rect(linewidth = 3))
-
-p_fig3c<-df_all%>%
-  select(c(P1.adm.NAM, P2.adm.NAM,coh))%>%
-  pivot_longer(
-    cols = c(P1.adm.NAM, P2.adm.NAM),
-    names_to = "Parent",
-    values_to = "value"
-  )%>%
-  mutate(Parent=case_when(
-    Parent=="P1.adm.NAM"~"Father",
-    Parent=="P2.adm.NAM"~"Mother",
-    TRUE ~ "NA")
-  )%>%
-  filter(!is.na(value))%>%
-  ggplot(.)+
-  geom_boxplot(aes(y=`value`,fill=Parent,x=coh,col=after_scale(fill)),size=2,alpha=.5)+
-  labs(y="True Ancestry\n(NAM-Like)",x="Population")+
-  scale_fill_manual(name="Parent", values=c("#00FFCC","#FF9933"))+
-  theme_professional(base_size = 30)+
-  theme(legend.position = "bottom",panel.border=element_rect(linewidth = 3))
-
-
-p_fig3<-(p_fig3a|p_fig3b|p_fig3c)+
-  plot_annotation(tag_levels = "A")+
-  plot_layout(guides = "collect",ncol = 1,nrow = 3) & theme(legend.position = "bottom",legend.text = element_text(size=30),
-                                                            legend.title = element_text(size=30),panel.border=element_rect(linewidth=3),
-                                                            plot.tag = element_text(face = 'bold',size=35))
-
-ggsave("Figure3.pdf",p_fig3,
-       dpi=600,width=29.5,height=20,units="in")
+p_fig2<-(p_admixture+
+           theme(legend.position = "none")
+         |p_fig2b)+
+  plot_layout(ncol = 1,nrow = 2,heights = c(1,5))+
+  plot_annotation(tag_levels = "A",
+                  )
+ggsave("Fig2b.pdf",p_fig2,
+       dpi=600,width=30,height=25,units="in")
 
 
 
