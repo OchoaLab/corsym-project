@@ -4,9 +4,7 @@
 library(mvtnorm)
 library(tidyverse)
 library(ochoalabtools)
-
-# load new function
-source( 'corsym.R' )
+library(corsym)
 
 # simulate some multivariate normal data that satisfies assumptions
 # true means will be zero
